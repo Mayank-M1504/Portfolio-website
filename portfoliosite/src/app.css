@@ -1,0 +1,446 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Neue Machina', 'Arial', sans-serif;
+  overflow: auto; /* Allow scrolling */
+}
+
+/* Ensure all text elements use Neue Machina */
+* {
+  font-family: 'Neue Machina', 'Arial', sans-serif;
+}
+
+.portfolio-container {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+/* Video background */
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Title text at top-left */
+.title-text {
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  color: #8B5CF6; /* Purple color matching reference */
+  font-size: 2.8rem;
+  font-weight: 800;
+  font-family: 'Neue Machina', sans-serif;
+  z-index: 10;
+  animation: fadeIn 1s ease-in;
+  letter-spacing: -0.02em;
+  text-shadow: none;
+  pointer-events: none;
+}
+
+
+/* Rocket container and animation */
+.rocket-container {
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 2s ease-in-out;
+  transform: translateY(0);
+  pointer-events: none;
+}
+
+.rocket-container.rocket-flying {
+  transform: translateY(-100vh) !important;
+  opacity: 0.3;
+}
+
+.rocket {
+  width: 200px;
+  height: auto;
+}
+
+/* Bright overlay for transition */
+.bright-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 15;
+  animation: brightFadeIn 1s ease-in;
+}
+
+/* Scrollable content */
+.scroll-content {
+  position: relative;
+  z-index: 5;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+  padding-top: 50px;
+}
+
+.scroll-section {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  color: white;
+}
+
+
+.blank-section {
+  background: transparent !important;
+  color: transparent !important;
+}
+
+.blank-section h2,
+.blank-section p {
+  display: none;
+}
+
+/* Selection page container */
+.selection-page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.selection-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.selection-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: imageFadeIn 1s ease-in;
+}
+
+/* HUD Interface */
+.hud-interface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.planet-card {
+  position: absolute;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+}
+
+.planet-card:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+}
+
+.planet-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.planet-card:hover .planet-image {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+}
+
+.planet-label {
+  position: absolute;
+  font-family: 'Neue Machina', sans-serif;
+  color: white;
+  z-index: 15;
+}
+
+.label-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 3px;
+  white-space: nowrap;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.05em;
+}
+
+.connector-line {
+  position: absolute;
+  background: white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  height: 3px;
+}
+
+/* About Me Planet - Bottom Left */
+.about-me {
+  bottom: 25%;
+  left: 15%;
+}
+
+.about-me .planet-label {
+  bottom: 0;
+  left: -200px;
+}
+
+.about-me .connector-line {
+  width: 180px;
+  top: 50%;
+  left: 60px; /* Start from planet center (60px from left edge) */
+  transform: rotate(-30deg);
+  transform-origin: left center;
+}
+
+/* Skills Planet - Top Left */
+.skills {
+  top: 20%;
+  left: 20%;
+}
+
+.skills .planet-label {
+  top: 0;
+  left: -180px;
+}
+
+.skills .connector-line {
+  width: 160px;
+  top: 50%;
+  left: 60px; /* Start from planet center (60px from left edge) */
+  transform: rotate(20deg);
+  transform-origin: left center;
+}
+
+/* Projects Planet - Top Right */
+.projects {
+  top: 25%;
+  right: 15%;
+}
+
+.projects .planet-label {
+  top: 0;
+  right: -180px;
+}
+
+.projects .connector-line {
+  width: 160px;
+  top: 50%;
+  right: 60px; /* Start from planet center (60px from right edge) */
+  transform: rotate(-20deg);
+  transform-origin: right center;
+}
+
+/* Experience Planet - Bottom Right */
+.experience {
+  bottom: 20%;
+  right: 20%;
+}
+
+.experience .planet-label {
+  bottom: 0;
+  right: -200px;
+}
+
+.experience .connector-line {
+  width: 180px;
+  top: 50%;
+  right: 60px; /* Start from planet center (60px from right edge) */
+  transform: rotate(30deg);
+  transform-origin: right center;
+}
+
+/* Final image container (keeping for compatibility) */
+.final-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 20;
+}
+
+.final-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  animation: imageFadeIn 1s ease-in;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brightFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes imageFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .title-text {
+    font-size: 2.2rem;
+    top: 30px;
+    left: 30px;
+    font-weight: 800;
+    font-family: 'Neue Machina', sans-serif;
+    color: #8B5CF6;
+  }
+  
+  
+  .rocket {
+    width: 160px;
+  }
+  
+  .rocket-container {
+    bottom: 25px;
+  }
+  
+  .rocket-container.rocket-flying {
+    transform: translateY(-100vh) !important;
+    opacity: 0.3;
+  }
+  
+  /* HUD Interface Mobile */
+  .planet-image {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .label-text {
+    font-size: 1.1rem;
+  }
+  
+  .about-me {
+    bottom: 25%;
+    left: 20%;
+  }
+  
+  .about-me .planet-label {
+    left: -120px;
+  }
+  
+  .about-me .connector-line {
+    width: 120px;
+    left: 40px; /* Start from planet center (40px from left edge for 80px planets) */
+  }
+  
+  .skills {
+    top: 20%;
+    left: 25%;
+  }
+  
+  .skills .planet-label {
+    left: -100px;
+  }
+  
+  .skills .connector-line {
+    width: 100px;
+    left: 40px; /* Start from planet center (40px from left edge for 80px planets) */
+  }
+  
+  .projects {
+    top: 25%;
+    right: 20%;
+  }
+  
+  .projects .planet-label {
+    right: -100px;
+  }
+  
+  .projects .connector-line {
+    width: 100px;
+    right: 40px; /* Start from planet center (40px from right edge for 80px planets) */
+  }
+  
+  .experience {
+    bottom: 20%;
+    right: 25%;
+  }
+  
+  .experience .planet-label {
+    right: -120px;
+  }
+  
+  .experience .connector-line {
+    width: 120px;
+    right: 40px; /* Start from planet center (40px from right edge for 80px planets) */
+  }
+}
