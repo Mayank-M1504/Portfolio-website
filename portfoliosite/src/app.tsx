@@ -6,8 +6,6 @@ export function App() {
   const backgroundVideoRef = useRef<HTMLVideoElement>(null)
   const [showTransition, setShowTransition] = useState(false)
   const [showFinalImage, setShowFinalImage] = useState(false)
-  const [rocketFlying, setRocketFlying] = useState(false)
-  const [hasTriggered, setHasTriggered] = useState(false)
   const [displayedText, setDisplayedText] = useState('')
   const [showCursor, setShowCursor] = useState(true)
   const [displayedSubtitle, setDisplayedSubtitle] = useState('')
@@ -22,18 +20,13 @@ export function App() {
   const [planetPosition, setPlanetPosition] = useState({ x: 0, y: 0 })
   const [isClosing, setIsClosing] = useState(false)
   const [videoLoaded, setVideoLoaded] = useState(false)
-
-  useEffect(() => {
-    // Ensure video is paused on load
-    if (videoRef.current) {
-      videoRef.current.pause()
-    }
-  }, [])
-
-  // Reset rocket position when component mounts
-  useEffect(() => {
-    setRocketFlying(false)
-  }, [])
+  const [showExaminingText, setShowExaminingText] = useState(false)
+  const [examiningText, setExaminingText] = useState('')
+  const [showExaminingCursor, setShowExaminingCursor] = useState(true)
+  const [showPlanetReturn, setShowPlanetReturn] = useState(false)
+  const [showTransitionVideo, setShowTransitionVideo] = useState(false)
+  const [textFading, setTextFading] = useState(false)
+  const [showButton, setShowButton] = useState(true)
 
   // Typing effect for title text
   useEffect(() => {
@@ -109,52 +102,72 @@ export function App() {
     return () => clearInterval(interval)
   }, [])
 
-  // Add scroll event listener
+  // Typing effect for examining text
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      
-      // Trigger animation when user scrolls down a bit (e.g., 10px)
-      if (scrollTop > 10 && !hasTriggered) {
-        setHasTriggered(true)
-        
-        // Play video for 1 second
-        if (videoRef.current) {
-          videoRef.current.currentTime = 0
-          videoRef.current.play().then(() => {
-            // Start rocket animation when video starts playing
-            setRocketFlying(true)
-            
-            // Pause after 1 second
-            setTimeout(() => {
-              if (videoRef.current) {
-                videoRef.current.pause()
-              }
-            }, 1000)
-          }).catch(console.error)
-        }
+    if (!showExaminingText) {
+      setExaminingText('')
+      return
+    }
 
-        // Start bright fade-in effect after a short delay
-        setTimeout(() => {
-          setShowTransition(true)
-          
-          // Show final image after fade-in completes
-          setTimeout(() => {
-            setShowFinalImage(true)
-          }, 1000) // Duration of fade-in effect
-        }, 500)
+    const fullText = "Examining planet..."
+    let currentIndex = 0
+    let timeoutId: number
+
+    const typeText = () => {
+      if (currentIndex < fullText.length) {
+        setExaminingText(fullText.slice(0, currentIndex + 1))
+        currentIndex++
+        timeoutId = setTimeout(typeText, 120) // 120ms delay between characters
+      } else {
+        setShowExaminingCursor(true)
       }
     }
 
-    // Add scroll listener to document
-    document.addEventListener('scroll', handleScroll)
-    window.addEventListener('scroll', handleScroll)
-    
+    // Start typing after a short delay
+    const startTyping = setTimeout(() => {
+      typeText()
+    }, 300)
+
     return () => {
-      document.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('scroll', handleScroll)
+      clearTimeout(startTyping)
+      clearTimeout(timeoutId)
     }
-  }, [hasTriggered])
+  }, [showExaminingText])
+
+  // Cursor blinking effect for examining text
+  useEffect(() => {
+    if (!showExaminingText) return
+
+    const interval = setInterval(() => {
+      setShowExaminingCursor(prev => !prev)
+    }, 500) // Blink every 500ms
+
+    return () => clearInterval(interval)
+  }, [showExaminingText])
+
+  // Handle enter space button click
+  const handleEnterSpace = () => {
+    setTextFading(true)
+    setShowButton(false)
+    
+    // After all elements fade out, show transition video
+    setTimeout(() => {
+      setShowTransitionVideo(true)
+      
+      // After transition video completes (2 seconds), show bright white animation
+      // Keep video playing while bright animation starts
+      setTimeout(() => {
+        setShowTransition(true)
+        
+        // Show final image after fade-in completes
+        setTimeout(() => {
+          setShowFinalImage(true)
+          // Hide transition video only after final image is shown
+          setShowTransitionVideo(false)
+        }, 1000) // Duration of fade-in effect
+      }, 2000) // Duration of transition video
+    }, 1000) // Duration of fade-out animation
+  }
 
   // Mouse tracking for custom cursor
   useEffect(() => {
@@ -198,23 +211,35 @@ export function App() {
     setSelectedPlanet(planetName)
     setShowPlanetTransition(true)
     
-    // After bright transition, show full-screen modal
+    // After planet scale animation, show black screen with typing
     setTimeout(() => {
-      setShowModal(true)
       setShowPlanetTransition(false)
-    }, 1000) // Duration of bright transition
+      setShowExaminingText(true)
+      
+      // After typing completes, show modal
+      setTimeout(() => {
+        setShowModal(true)
+        setShowExaminingText(false)
+      }, 3000) // Duration for typing animation
+    }, 1500) // Duration of planet scale animation
   }
 
   // Function to close modal
   const handleCloseModal = () => {
     setIsClosing(true)
     
-    // After animation completes, hide modal
+    // After modal shrinks to center, show planet return animation
     setTimeout(() => {
       setShowModal(false)
-      setSelectedPlanet('')
+      setShowPlanetReturn(true)
       setIsClosing(false)
-    }, 600) // Duration of close animation
+      
+      // After planet returns to position, hide everything
+      setTimeout(() => {
+        setShowPlanetReturn(false)
+        setSelectedPlanet('')
+      }, 1000) // Duration of planet return animation
+    }, 600) // Duration of modal shrink animation
   }
 
   // Function to handle back to home
@@ -225,19 +250,14 @@ export function App() {
     setTimeout(() => {
       setShowFinalImage(false)
       setShowTransition(false)
-      setRocketFlying(false)
-      setHasTriggered(false)
+      setTextFading(false)
+      setShowButton(true)
       setDisplayedText('')
       setDisplayedSubtitle('')
       setShowCursor(false)
       setShowSubtitleCursor(false)
       setShowBackTransition(false)
-      
-      // Reset video
-      if (videoRef.current) {
-        videoRef.current.pause()
-        videoRef.current.currentTime = 0
-      }
+      setShowTransitionVideo(false)
       
       // Restart typing effects by incrementing the key
       setTypingKey(prev => prev + 1)
@@ -264,19 +284,69 @@ export function App() {
           <img src="/space.jpg" alt="Space Background" className="selection-bg-image" />
         </div>
 
-        {/* Back to Home Arrow */}
-        <div className="back-arrow" onClick={handleBackToHome}>
-          <div className="arrow-icon">↑</div>
+        {/* Selection Page Title */}
+        <div className="selection-title">
+          <h1 className="selection-main-title">Select planet to explore</h1>
         </div>
+
+        {/* Back to Home Arrow */}
+        {!showExaminingText && (
+          <div className="back-arrow" onClick={handleBackToHome}>
+            <div className="arrow-icon">↑</div>
+          </div>
+        )}
 
         {/* Bright overlay for back transition */}
         {showBackTransition && (
           <div className="bright-overlay"></div>
         )}
 
-        {/* Bright overlay for planet transition */}
+        {/* Planet scale animation overlay */}
         {showPlanetTransition && (
-          <div className="bright-overlay"></div>
+          <div className="planet-scale-overlay">
+            <div 
+              className="scaling-planet"
+              style={{
+                '--planet-x': `${planetPosition.x}px`,
+                '--planet-y': `${planetPosition.y}px`,
+              } as any}
+            >
+              <img 
+                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : '4'}.png`} 
+                alt={selectedPlanet} 
+                className="scaling-planet-image" 
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Black screen with examining text */}
+        {showExaminingText && (
+          <div className="examining-screen">
+            <div className="examining-text">
+              {examiningText}
+              <span className={`typing-cursor ${showExaminingCursor ? 'visible' : 'hidden'}`}>_</span>
+            </div>
+          </div>
+        )}
+
+        {/* Planet return animation */}
+        {showPlanetReturn && (
+          <div className="planet-return-overlay">
+            <div 
+              className="returning-planet"
+              style={{
+                '--planet-x': `${planetPosition.x}px`,
+                '--planet-y': `${planetPosition.y}px`,
+              } as any}
+            >
+              <img 
+                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : '4'}.png`} 
+                alt={selectedPlanet} 
+                className="returning-planet-image" 
+              />
+            </div>
+          </div>
         )}
 
         {/* Full-screen Modal */}
@@ -316,31 +386,31 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* HTML logo will go here */}
+                              <img src="/HTML.png" alt="HTML" />
                             </div>
                             <span className="skill-text">HTML</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* CSS logo will go here */}
+                              <img src="/CSS.png" alt="CSS" />
                             </div>
                             <span className="skill-text">CSS</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* JavaScript logo will go here */}
+                              <img src="/JAVASCRIPT.png" alt="JavaScript" />
                             </div>
                             <span className="skill-text">JavaScript</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* React.js logo will go here */}
+                              <img src="/REACT.png" alt="React.js" />
                             </div>
                             <span className="skill-text">React.js</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Next.js logo will go here */}
+                              <img src="/NEXTJS.png" alt="Next.js" />
                             </div>
                             <span className="skill-text">Next.js</span>
                           </div>
@@ -352,19 +422,19 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Python logo will go here */}
+                              <img src="/PYTHON.png" alt="Python" />
                             </div>
                             <span className="skill-text">Python</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Node.js logo will go here */}
+                              <img src="/NODEJS.png" alt="Node.js" />
                             </div>
                             <span className="skill-text">Node.js</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Spring Boot logo will go here */}
+                              <img src="/spring-boot.png" alt="Spring Boot" />
                             </div>
                             <span className="skill-text">Spring Boot</span>
                           </div>
@@ -376,13 +446,13 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* SQL logo will go here */}
+                              <img src="/SQL.png" alt="SQL" />
                             </div>
                             <span className="skill-text">SQL</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Firebase logo will go here */}
+                              <img src="/FIREBASE.png" alt="Firebase" />
                             </div>
                             <span className="skill-text">Firebase</span>
                           </div>
@@ -394,7 +464,7 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Prompt Engineering logo will go here */}
+                              <img src="/PROMPT.png" alt="Prompt Engineering" />
                             </div>
                             <span className="skill-text">Prompt Engineering</span>
                           </div>
@@ -406,7 +476,7 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              {/* Canva logo will go here */}
+                              <img src="/CANVA.png" alt="Canva" />
                             </div>
                             <span className="skill-text">Canva</span>
                           </div>
@@ -436,7 +506,7 @@ export function App() {
                           </div>
                           <div className="contact-item">
                             <div className="contact-icon">📱</div>
-                            <span className="contact-text">+91-9483234360</span>
+                            <span className="contact-text">9483234360</span>
                           </div>
                           <a href="https://www.linkedin.com/in/mayank-m-bb8b41281?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="contact-button linkedin">
                             <div className="contact-icon">💼</div>
@@ -468,7 +538,12 @@ export function App() {
                   ) : selectedPlanet === 'Projects' ? (
                     <div className="projects-content">
                       <div className="project-item">
-                        <h3 className="project-title">Awesome.Co Website</h3>
+                        <div className="project-title-container">
+                          <h3 className="project-title">Awesome.Co Website</h3>
+                          <a href="https://awesomecom.netlify.app/" target="_blank" rel="noopener noreferrer" className="project-link">
+                            <span className="link-icon">🔗</span>
+                          </a>
+                        </div>
                         <p className="project-description">
                           A custom clothing brand website offering high-quality, personalized hoodies and t-shirts.
                           Features include product customization, responsive design, and direct WhatsApp ordering.
@@ -479,7 +554,10 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            {/* Tech stack icons will be added here */}
+                            <img src="/HTML.png" alt="HTML" className="tech-icon" />
+                            <img src="/CSS.png" alt="CSS" className="tech-icon" />
+                            <img src="/JAVASCRIPT.png" alt="JavaScript" className="tech-icon" />
+                            
                           </div>
                         </div>
                       </div>
@@ -496,7 +574,8 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            {/* Tech stack icons will be added here */}
+                            <img src="/PYTHON.png" alt="Python" className="tech-icon" />
+                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" />
                           </div>
                         </div>
                       </div>
@@ -513,7 +592,8 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            {/* Tech stack icons will be added here */}
+                            <img src="/PYTHON.png" alt="Python" className="tech-icon" />
+                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" />
                           </div>
                         </div>
                       </div>
@@ -530,7 +610,33 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            {/* Tech stack icons will be added here */}
+                            <img src="/flutter.png" alt="React" className="tech-icon" />
+                            <img src="/FIREBASE.png" alt="Firebase" className="tech-icon" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedPlanet === 'Experience' ? (
+                    <div className="experience-content">
+                      <div className="experience-item">
+                        <div className="experience-header">
+                          <h3 className="experience-title">Full Stack Intern</h3>
+                          <span className="experience-company">Zidio Development</span>
+                        </div>
+                        <div className="experience-duration">April 2025 - July 2025</div>
+                        <div className="experience-description">
+                          <p>
+                            Developed a Job Portal for students, making it easier for them to find relevant opportunities.
+                            Implemented various technologies such as JWT for authentication, integrated email services, and cloud file storage 
+                            ensured a smooth, user-friendly experience.
+                          </p>
+                        </div>
+                        <div className="experience-tech-stack">
+                          <h4 className="tech-title">Technologies Used</h4>
+                          <div className="tech-icons">
+                            <img src="/NEXTJS.png" alt="Next.js" className="tech-icon" />
+                            <img src="/spring-boot.png" alt="Spring-boot" className="tech-icon" />
+                            <img src="/SQL.png" alt="SQL" className="tech-icon" />
                           </div>
                         </div>
                       </div>
@@ -556,7 +662,7 @@ export function App() {
           playsInline
           onLoadedData={() => setVideoLoaded(true)}
         >
-          <source src="/space.mp4" type="video/mp4" />
+          <source src="/space1.mp4" type="video/mp4" />
         </video>
 
         {/* HUD Interface */}
@@ -616,14 +722,29 @@ export function App() {
         <video
           ref={videoRef}
           className="background-video"
+          autoPlay
+          loop
           muted
           playsInline
           preload="auto"
         >
-          <source src="/earth.mp4" type="video/mp4" />
+          <source src="/newtravel.mp4" type="video/mp4" />
         </video>
-        <div className="video-overlay"></div>
       </div>
+
+      {/* Transition Video Overlay */}
+      {showTransitionVideo && (
+        <div className="transition-video-overlay">
+          <video
+            className="transition-video"
+            autoPlay
+            muted
+            playsInline
+          >
+            <source src="/new transition.mp4" type="video/mp4" />
+          </video>
+        </div>
+      )}
 
       {/* Bright overlay for transition effect */}
       {showTransition && (
@@ -631,59 +752,29 @@ export function App() {
       )}
 
       {/* Text at top-left */}
-      <div className="title-text">
+      <div className={`title-text ${textFading ? 'fading' : ''}`}>
         {displayedText}
         <span className={`typing-cursor ${showCursor ? 'visible' : 'hidden'}`}>_</span>
       </div>
 
       {/* Subtitle text below main title */}
-      <div className="subtitle-text">
+      <div className={`subtitle-text ${textFading ? 'fading' : ''}`}>
         {displayedSubtitle}
         <span className={`typing-cursor ${showSubtitleCursor ? 'visible' : 'hidden'}`}>_</span>
       </div>
 
-      {/* Vertical scroll instruction text on the right */}
-      <div className="scroll-instruction">
-        <div className="vertical-text">scroll to start journey</div>
-      </div>
+      {/* Enter Space Button */}
+      {showButton && (
+        <div className="enter-space-container">
+          <button className="enter-space-button" onClick={handleEnterSpace}>
+            Launch Exploration
+          </button>
+        </div>
+      )}
 
 
 
-      {/* Rocket at bottom center */}
-      <div className={`rocket-container ${rocketFlying ? 'rocket-flying' : ''}`}>
-        <img 
-          src="/rocket.png" 
-          alt="Rocket" 
-          className="rocket"
-        />
-      </div>
 
-      {/* Scrollable content below - blank sections only */}
-      <div className="scroll-content">
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-        
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-        
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-        
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-        
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-        
-        <div className="scroll-section blank-section">
-          <div style={{ height: '100vh' }}></div>
-        </div>
-      </div>
     </div>
   )
 }

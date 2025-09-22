@@ -4,6 +4,12 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+/* Performance optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 /* Font face declarations for Neue Machina */
 @font-face {
   font-family: "Neue Machina"; 
@@ -30,8 +36,7 @@
 }
 body {
   font-family: 'Neue Machina', 'Arial', sans-serif;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   cursor: none !important; /* Hide default cursor */
 }
 
@@ -52,6 +57,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   z-index: 9999;
   transform: translate(-50%, -50%);
   transition: transform 0.1s ease-out;
+  will-change: transform;
 }
 
 .cursor-dot {
@@ -63,8 +69,9 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
-  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .cursor-ring {
@@ -76,23 +83,22 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   animation: cursorPulse 2s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .custom-cursor.hovering .cursor-dot {
-  width: 12px;
-  height: 12px;
+  transform: translate(-50%, -50%) scale(1.5);
   background: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
 }
 
 .custom-cursor.hovering .cursor-ring {
-  width: 50px;
-  height: 50px;
+  transform: translate(-50%, -50%) scale(1.67);
   border-color: rgba(255, 255, 255, 0.6);
   border-width: 3px;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 @keyframes cursorPulse {
@@ -134,18 +140,9 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  will-change: opacity;
 }
 
-.video-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 2;
-  pointer-events: none;
-}
 
 /* Title text at top-left */
 .title-text {
@@ -153,13 +150,19 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   top: 40px;
   left: 40px;
   color: #8B5CF6; /* Purple color matching reference */
-  font-size: 2.8rem;
-  font-weight: 300;
+  font-size: 3.5rem;
+  font-weight: 800;
   font-family: 'Neue Machina', sans-serif;
   z-index: 10;
   letter-spacing: -0.02em;
-  text-shadow: none;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
   pointer-events: none;
+  transition: opacity 1s ease-out;
+  will-change: opacity;
+}
+
+.title-text.fading {
+  opacity: 0;
 }
 
 /* Subtitle text styling */
@@ -175,36 +178,80 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   letter-spacing: -0.01em;
   text-shadow: none;
   pointer-events: none;
+  transition: opacity 1s ease-out;
+  will-change: opacity;
 }
 
-/* Vertical scroll instruction text */
-.scroll-instruction {
+.subtitle-text.fading {
+  opacity: 0;
+}
+
+/* Enter Space Button */
+.enter-space-container {
   position: fixed;
-  top: 50%;
-  right: 40px;
-  transform: translateY(-50%);
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
-.vertical-text {
-  color: #8B5CF6; /* Same purple color as other text */
-  font-size: 1.2rem;
-  font-weight: 300;
+.enter-space-button {
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(139, 92, 246, 0.6);
+  border-radius: 40px;
+  color: #8B5CF6;
   font-family: 'Neue Machina', sans-serif;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
-  opacity: 0.8;
-  animation: pulse 2s ease-in-out infinite;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  cursor: none !important;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 0 30px rgba(139, 92, 246, 0.2),
+    inset 0 0 20px rgba(139, 92, 246, 0.1);
+  will-change: transform, opacity, box-shadow;
+}
+
+.enter-space-button:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.8);
+  transform: scale(1.05);
+  text-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+  box-shadow: 
+    0 0 40px rgba(139, 92, 246, 0.3),
+    inset 0 0 30px rgba(139, 92, 246, 0.2);
+}
+
+/* Transition Video Overlay */
+.transition-video-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.transition-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: opacity;
 }
 
 /* Typing cursor animation */
 .typing-cursor {
   color: #8B5CF6;
-  font-weight: 300;
+  font-weight: 800;
   animation: blink 1s infinite;
+  will-change: opacity;
 }
 
 .typing-cursor.visible {
@@ -216,116 +263,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
 }
 
 
-/* Rocket container and animation */
-.rocket-container {
-  position: fixed;
-  bottom: 30px;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 2s ease-in-out;
-  transform: translateY(0);
-  pointer-events: none;
-}
 
-.rocket-container.rocket-flying {
-  transform: translateY(-100vh) !important;
-  opacity: 0.3;
-}
-
-.rocket {
-  width: 200px;
-  height: auto;
-}
-
-/* Falling stars container */
-.falling-stars {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* So stars don't block clicks */
-  overflow: hidden;
-  z-index: 3; /* Above video but below text */
-}
-
-/* Individual star (streak line) */
-.star {
-  position: absolute;
-  width: 1px;
-  height: 120px; /* length of streak */
-  background: linear-gradient(to bottom, 
-    #ffffff 0%, 
-    #ffffff 5%, 
-    rgba(255, 255, 255, 0.8) 15%, 
-    rgba(255, 255, 255, 0.4) 40%, 
-    rgba(255, 255, 255, 0.1) 70%, 
-    transparent 100%
-  );
-  opacity: 0.9;
-  transform: rotate(90deg); /* vertical direction - straight down */
-  animation: fall linear infinite;
-  box-shadow: 
-    0 0 3px rgba(255, 255, 255, 0.8),
-    0 0 6px rgba(255, 255, 255, 0.4),
-    0 0 9px rgba(255, 255, 255, 0.2);
-  border-radius: 1px;
-}
-
-/* Bright head of the shooting star */
-.star::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -2px;
-  width: 5px;
-  height: 5px;
-  background: radial-gradient(circle, #ffffff 0%, rgba(255, 255, 255, 0.8) 30%, transparent 70%);
-  border-radius: 50%;
-  box-shadow: 
-    0 0 8px rgba(255, 255, 255, 1),
-    0 0 16px rgba(255, 255, 255, 0.6),
-    0 0 24px rgba(255, 255, 255, 0.3);
-}
-
-/* Shooting animation */
-@keyframes fall {
-  0% {
-    transform: translateY(-150px) translateX(0) rotate(90deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(120vh) translateX(0) rotate(90deg);
-    opacity: 0;
-  }
-}
-
-/* Randomize each star's animation speed and position */
-.star:nth-child(1)  { left: 5%;  animation-duration: 3s; animation-delay: 0s; }
-.star:nth-child(2)  { left: 15%; animation-duration: 4s; animation-delay: 1s; }
-.star:nth-child(3)  { left: 25%; animation-duration: 5s; animation-delay: 2s; }
-.star:nth-child(4)  { left: 35%; animation-duration: 3.5s; animation-delay: 0.5s; }
-.star:nth-child(5)  { left: 45%; animation-duration: 4.5s; animation-delay: 1.5s; }
-.star:nth-child(6)  { left: 55%; animation-duration: 3s; animation-delay: 2.5s; }
-.star:nth-child(7)  { left: 65%; animation-duration: 4s; animation-delay: 0.7s; }
-.star:nth-child(8)  { left: 75%; animation-duration: 5s; animation-delay: 1.2s; }
-.star:nth-child(9)  { left: 85%; animation-duration: 3.2s; animation-delay: 0.3s; }
-.star:nth-child(10) { left: 95%; animation-duration: 4.2s; animation-delay: 1.7s; }
-.star:nth-child(11) { left: 20%; animation-duration: 5.5s; animation-delay: 0.9s; }
-.star:nth-child(12) { left: 40%; animation-duration: 4.8s; animation-delay: 1.4s; }
-.star:nth-child(13) { left: 60%; animation-duration: 3.6s; animation-delay: 2.2s; }
-.star:nth-child(14) { left: 80%; animation-duration: 5.2s; animation-delay: 1.1s; }
-.star:nth-child(15) { left: 90%; animation-duration: 4.4s; animation-delay: 0.6s; }
 
 /* Bright overlay for transition */
 .bright-overlay {
@@ -335,39 +273,122 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.9);
-  z-index: 15;
+  z-index: 30;
   animation: brightFadeIn 1s ease-in;
+  will-change: opacity;
 }
 
-/* Scrollable content */
-.scroll-content {
-  position: relative;
-  z-index: 5;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
-  padding-top: 50px;
-}
-
-.scroll-section {
-  height: 100vh;
+/* Planet scale animation overlay */
+.planet-scale-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 15;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 40px;
-  color: white;
+  animation: planetScaleFadeIn 1.5s ease-out;
+  will-change: opacity;
 }
 
-
-.blank-section {
-  background: transparent !important;
-  color: transparent !important;
+/* Fade out background elements during planet animation */
+.planet-scale-overlay .hud-interface,
+.planet-scale-overlay .selection-title,
+.planet-scale-overlay .back-arrow {
+  animation: fadeOutElements 1.5s ease-out forwards;
+  will-change: opacity;
 }
 
-.blank-section h2,
-.blank-section p {
-  display: none;
+.scaling-planet {
+  position: absolute;
+  left: var(--planet-x);
+  top: var(--planet-y);
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  animation: planetMoveAndScale 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity;
 }
+
+.scaling-planet-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(139, 92, 246, 0.6);
+  box-shadow: 
+    0 0 50px rgba(139, 92, 246, 0.4),
+    0 0 100px rgba(139, 92, 246, 0.2);
+  will-change: transform, opacity;
+}
+
+/* Examining screen */
+.examining-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 60px;
+  animation: examiningFadeIn 0.5s ease-out;
+  will-change: opacity;
+}
+
+.examining-text {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #8B5CF6;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+  letter-spacing: -0.02em;
+  will-change: opacity;
+}
+
+/* Planet return animation overlay */
+.planet-return-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: planetReturnFadeIn 1s ease-out;
+  will-change: opacity;
+}
+
+.returning-planet {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  animation: planetReturnToPosition 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity;
+}
+
+.returning-planet-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(139, 92, 246, 0.6);
+  box-shadow: 
+    0 0 50px rgba(139, 92, 246, 0.4),
+    0 0 100px rgba(139, 92, 246, 0.2);
+  will-change: transform, opacity;
+}
+
 
 /* Selection page container */
 .selection-page-container {
@@ -391,21 +412,21 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   padding: 12px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
   width: 50px;
   height: 50px;
+  will-change: transform, opacity;
 }
 
 .back-arrow:hover {
   background: rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateX(-50%) scale(1.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 .arrow-icon {
@@ -435,6 +456,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   height: 100%;
   object-fit: cover;
   animation: imageFadeIn 1s ease-in;
+  will-change: transform, opacity;
 }
 
 /* Background Video */
@@ -449,10 +471,53 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   opacity: 0.7;
   transition: opacity 0.5s ease;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  will-change: opacity;
 }
 
 .background-video.loaded {
   opacity: 0.8;
+}
+
+/* Selection Page Title */
+.selection-title {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  pointer-events: none;
+  text-align: center;
+}
+
+.selection-main-title {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #8B5CF6;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  letter-spacing: -0.02em;
+  animation: selectionPulse 3s ease-in-out infinite;
+  will-change: transform, opacity;
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 20px 30px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.2),
+    inset 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+@keyframes selectionPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
 }
 
 /* HUD Interface */
@@ -470,12 +535,13 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   position: absolute;
   cursor: none !important;
   pointer-events: auto;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .planet-card:hover {
   transform: scale(1.1);
-  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
 }
 
 .planet-image {
@@ -484,13 +550,14 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .planet-card:hover .planet-image {
   border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
 }
 
 .planet-label {
@@ -568,12 +635,12 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
   z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fullscreenFadeIn 0.5s ease-out;
+  will-change: transform, opacity;
 }
 
 .fullscreen-content {
@@ -583,14 +650,20 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   display: flex;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 40, 0.9) 100%);
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 /* Closing animation */
 .fullscreen-content.closing {
-  animation: modalCloseToPlanet 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-  transform-origin: var(--planet-x) var(--planet-y);
-  will-change: transform, opacity, filter;
+  animation: modalCloseToCenter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
 }
 
 .planet-section {
@@ -610,12 +683,13 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   object-fit: cover;
   border-radius: 50%;
   border: 4px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
+  text-shadow: 
     0 0 50px rgba(139, 92, 246, 0.3),
     0 0 100px rgba(139, 92, 246, 0.1),
-    inset 0 0 30px rgba(255, 255, 255, 0.1);
+    0 0 30px rgba(255, 255, 255, 0.1);
   animation: planetFloat 3s ease-in-out infinite;
   z-index: 2;
+  will-change: transform;
 }
 
 .planet-glow {
@@ -629,6 +703,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border-radius: 50%;
   animation: glowPulse 2s ease-in-out infinite;
   z-index: 1;
+  will-change: transform, opacity;
 }
 
 .content-section {
@@ -670,15 +745,15 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   align-items: center;
   justify-content: center;
   cursor: none !important;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .content-close:hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.5);
   transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .close-icon {
@@ -748,16 +823,16 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border-radius: 20px;
   padding: 16px 12px;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
   min-width: 100px;
+  will-change: transform, opacity;
 }
 
 .skill-item:hover {
   background: rgba(139, 92, 246, 0.2);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
 .skill-logo {
@@ -770,6 +845,14 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.skill-logo img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .skill-item:hover .skill-logo {
@@ -834,16 +917,16 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 15px;
   padding: 15px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   min-width: 0;
+  will-change: transform, opacity;
 }
 
 .contact-item:hover {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  text-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
 }
 
 .contact-button {
@@ -854,31 +937,31 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 15px;
   padding: 15px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   text-decoration: none;
   cursor: none !important;
   min-width: 0;
+  will-change: transform, opacity;
 }
 
 .contact-button:hover {
   background: rgba(139, 92, 246, 0.2);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
   text-decoration: none;
 }
 
 .contact-button.linkedin:hover {
   background: rgba(0, 119, 181, 0.2);
   border-color: rgba(0, 119, 181, 0.5);
-  box-shadow: 0 4px 15px rgba(0, 119, 181, 0.3);
+  text-shadow: 0 4px 15px rgba(0, 119, 181, 0.3);
 }
 
 .contact-button.github:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
 }
 
 .contact-icon {
@@ -887,6 +970,30 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   align-items: center;
   justify-content: center;
   min-width: 24px;
+}
+
+.contact-icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  transition: all 0.3s ease;
+}
+
+.contact-button.linkedin .contact-icon-img {
+  filter: brightness(0) invert(1);
+}
+
+.contact-button.github .contact-icon-img {
+  filter: brightness(0) invert(1);
+}
+
+.contact-button.linkedin:hover .contact-icon-img {
+  filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(200deg);
+}
+
+.contact-button.github:hover .contact-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .contact-text {
@@ -914,15 +1021,15 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 15px;
   padding: 20px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .education-item:hover {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  text-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
 }
 
 .institution {
@@ -965,15 +1072,107 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 20px;
   padding: 25px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .project-item:hover {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+  text-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+}
+
+/* Experience Content Styles */
+.experience-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.experience-item {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 25px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.experience-item:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-3px);
+  text-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+}
+
+.experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.experience-title {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #8B5CF6;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.experience-company {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 15px;
+  padding: 8px 16px;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.experience-duration {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #8B5CF6;
+  margin-bottom: 15px;
+  text-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  font-style: italic;
+}
+
+.experience-description {
+  margin-bottom: 20px;
+}
+
+.experience-description p {
+  font-family: 'Neue Machina', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: #ffffff;
+  line-height: 1.7;
+  margin: 0;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+.experience-tech-stack {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.project-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+  padding-bottom: 10px;
 }
 
 .project-title {
@@ -981,10 +1180,43 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   font-size: 1.8rem;
   font-weight: 600;
   color: #8B5CF6;
-  margin: 0 0 15px 0;
+  margin: 0;
   text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
-  border-bottom: 2px solid rgba(139, 92, 246, 0.3);
-  padding-bottom: 10px;
+}
+
+.project-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 50%;
+  text-decoration: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  cursor: none !important;
+  will-change: transform, opacity;
+}
+
+.project-link:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: scale(1.1);
+  text-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+  text-decoration: none;
+}
+
+.link-icon {
+  font-size: 1.2rem;
+  color: #8B5CF6;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  transition: all 0.3s ease;
+}
+
+.project-link:hover .link-icon {
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
 }
 
 .project-description {
@@ -1041,14 +1273,20 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   border: 1px dashed rgba(139, 92, 246, 0.3);
 }
 
-.tech-icons::before {
-  content: "Tech stack icons will be added here";
-  font-family: 'Neue Machina', sans-serif;
-  font-size: 1rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-  width: 100%;
+.tech-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.tech-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
 }
 
 
@@ -1083,46 +1321,18 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   }
 }
 
-@keyframes modalCloseToPlanet {
+@keyframes modalCloseToCenter {
   0% {
     opacity: 1;
-    transform: scale(1) translate(0, 0);
-    filter: blur(0px);
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
   }
-  10% {
-    opacity: 0.95;
-    transform: scale(0.95) translate(calc(1vw - var(--planet-x) * 0.01), calc(1vh - var(--planet-y) * 0.01));
-    filter: blur(0.2px);
-  }
-  25% {
-    opacity: 0.85;
-    transform: scale(0.85) translate(calc(3vw - var(--planet-x) * 0.06), calc(3vh - var(--planet-y) * 0.06));
-    filter: blur(0.5px);
-  }
-  40% {
-    opacity: 0.7;
-    transform: scale(0.7) translate(calc(6vw - var(--planet-x) * 0.12), calc(6vh - var(--planet-y) * 0.12));
-    filter: blur(1px);
-  }
-  55% {
-    opacity: 0.5;
-    transform: scale(0.5) translate(calc(12vw - var(--planet-x) * 0.24), calc(12vh - var(--planet-y) * 0.24));
-    filter: blur(1.5px);
-  }
-  70% {
-    opacity: 0.3;
-    transform: scale(0.3) translate(calc(20vw - var(--planet-x) * 0.4), calc(20vh - var(--planet-y) * 0.4));
-    filter: blur(2px);
-  }
-  85% {
-    opacity: 0.15;
-    transform: scale(0.15) translate(calc(35vw - var(--planet-x) * 0.7), calc(35vh - var(--planet-y) * 0.7));
-    filter: blur(3px);
+  50% {
+    opacity: 0.8;
+    transform: scale3d(0.3, 0.3, 1) translate3d(0, 0, 0);
   }
   100% {
     opacity: 0;
-    transform: scale(0.05) translate(calc(50vw - var(--planet-x)), calc(50vh - var(--planet-y)));
-    filter: blur(4px);
+    transform: scale3d(0.2, 0.2, 1) translate3d(0, 0, 0);
   }
 }
 
@@ -1145,6 +1355,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   max-height: 100%;
   object-fit: contain;
   animation: imageFadeIn 1s ease-in;
+  will-change: transform, opacity;
 }
 
 /* Animations */
@@ -1177,6 +1388,79 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   }
 }
 
+@keyframes planetScaleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes planetMoveAndScale {
+  0% {
+    transform: translate(-50%, -50%) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(calc(50vw - var(--planet-x) - 90px), calc(50vh - var(--planet-y) - 90px)) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(calc(50vw - var(--planet-x) - 90px), calc(50vh - var(--planet-y) - 90px)) scale3d(1.5, 1.5, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(50vw - var(--planet-x) - 90px), calc(50vh - var(--planet-y) - 90px)) scale3d(2.5, 2.5, 1);
+    opacity: 0;
+  }
+}
+
+@keyframes examiningFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes planetReturnFadeIn {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes planetReturnToPosition {
+  0% {
+    transform: translate(-50%, -50%) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(calc(var(--planet-x) - 50vw - 90px), calc(var(--planet-y) - 50vh - 90px)) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--planet-x) - 50vw - 90px), calc(var(--planet-y) - 50vh - 90px)) scale3d(1, 1, 1);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOutElements {
+  0% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes imageFadeIn {
   from {
     opacity: 0;
@@ -1202,47 +1486,39 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
 /* Responsive design */
 @media (max-width: 768px) {
   .title-text {
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     top: 30px;
     left: 30px;
-    font-weight: 300;
+    font-weight: 800;
     font-family: 'Neue Machina', sans-serif;
     color: #8B5CF6;
   }
   
   .typing-cursor {
-    font-size: 2.2rem;
-    font-weight: 300;
+    font-size: 2.8rem;
+    font-weight: 800;
   }
   
   .subtitle-text {
-    font-size: 1.1rem;
-    top: 100px;
+    font-size: 1.4rem;
+    top: 120px;
     left: 30px;
+    font-weight: 600;
   }
   
   .scroll-instruction {
     right: 20px;
   }
   
-  .vertical-text {
+  .enter-space-container {
+    bottom: 30px;
+  }
+
+  .enter-space-button {
     font-size: 1rem;
-    letter-spacing: 0.05em;
+    padding: 10px 20px;
   }
   
-  
-  .rocket {
-    width: 160px;
-  }
-  
-  .rocket-container {
-    bottom: 25px;
-  }
-  
-  .rocket-container.rocket-flying {
-    transform: translateY(-100vh) !important;
-    opacity: 0.3;
-  }
   
   /* HUD Interface Mobile */
   .planet-image {
@@ -1419,6 +1695,11 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   .contact-icon {
     font-size: 1.3rem;
   }
+
+  .contact-icon-img {
+    width: 20px;
+    height: 20px;
+  }
   
   .contact-text {
     font-size: 1rem;
@@ -1452,8 +1733,24 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
     padding: 20px;
   }
   
+  .project-title-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
   .project-title {
     font-size: 1.5rem;
+  }
+
+  .project-link {
+    width: 35px;
+    height: 35px;
+    align-self: flex-end;
+  }
+
+  .link-icon {
+    font-size: 1rem;
   }
   
   .project-description {
@@ -1472,5 +1769,68 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   .tech-icons {
     min-height: 40px;
     padding: 8px;
+  }
+
+  .tech-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  /* Experience Mobile */
+  .experience-content {
+    gap: 20px;
+  }
+
+  .experience-item {
+    padding: 20px;
+  }
+
+  .experience-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .experience-title {
+    font-size: 1.5rem;
+  }
+
+  .experience-company {
+    font-size: 1rem;
+    padding: 6px 12px;
+  }
+
+  .experience-duration {
+    font-size: 1rem;
+  }
+
+  .experience-description p {
+    font-size: 1.1rem;
+  }
+
+  /* Selection Page Mobile */
+  .selection-title {
+    top: 18%;
+  }
+
+  .selection-main-title {
+    font-size: 1.8rem;
+    padding: 15px 20px;
+    border-radius: 15px;
+  }
+
+  /* Examining screen mobile */
+  .examining-screen {
+    padding: 40px 30px;
+  }
+
+  .examining-text {
+    font-size: 1.8rem;
+  }
+
+  /* Planet return mobile */
+  .returning-planet-image {
+    width: 120px;
+    height: 120px;
   }
 }
