@@ -280,9 +280,7 @@ export function App() {
         </div>
 
         {/* Space Background */}
-        <div className="selection-background">
-          <img src="/space.jpg" alt="Space Background" className="selection-bg-image" />
-        </div>
+        
 
         {/* Selection Page Title */}
         <div className="selection-title">
@@ -728,7 +726,7 @@ export function App() {
           playsInline
           preload="auto"
         >
-          <source src="/newtravel.mp4" type="video/mp4" />
+          <source src="/Intro.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -741,7 +739,7 @@ export function App() {
             muted
             playsInline
           >
-            <source src="/new transition.mp4" type="video/mp4" />
+            <source src="/Transition.mp4" type="video/mp4" />
           </video>
         </div>
       )}

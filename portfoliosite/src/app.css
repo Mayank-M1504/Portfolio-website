@@ -155,7 +155,7 @@ button, a, [onclick], [role="button"], .clickable, .planet-card, .back-arrow {
   font-family: 'Neue Machina', sans-serif;
   z-index: 10;
   letter-spacing: -0.02em;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 0 20px rgba(153, 0, 255, 0.321);
   pointer-events: none;
   transition: opacity 1s ease-out;
   will-change: opacity;
