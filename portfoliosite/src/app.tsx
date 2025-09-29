@@ -20,6 +20,8 @@ export function App() {
   const [planetPosition, setPlanetPosition] = useState({ x: 0, y: 0 })
   const [isClosing, setIsClosing] = useState(false)
   const [videoLoaded, setVideoLoaded] = useState(false)
+  const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false)
+  const [transitionVideoLoaded, setTransitionVideoLoaded] = useState(false)
   const [showExaminingText, setShowExaminingText] = useState(false)
   const [examiningText, setExaminingText] = useState('')
   const [showExaminingCursor, setShowExaminingCursor] = useState(true)
@@ -284,7 +286,7 @@ export function App() {
 
         {/* Selection Page Title */}
         <div className="selection-title">
-          <h1 className="selection-main-title">Select planet to explore</h1>
+          <h1 className="selection-main-title">Discover My Universe</h1>
         </div>
 
         {/* Back to Home Arrow */}
@@ -310,9 +312,11 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : '4'}.png`} 
+                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
-                className="scaling-planet-image" 
+                className="scaling-planet-image"
+                loading="eager"
+                decoding="async"
               />
             </div>
           </div>
@@ -339,9 +343,11 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : '4'}.png`} 
+                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
-                className="returning-planet-image" 
+                className="returning-planet-image"
+                loading="eager"
+                decoding="async"
               />
             </div>
           </div>
@@ -361,9 +367,11 @@ export function App() {
               {/* Left side - Planet Image */}
               <div className="planet-section">
                 <img 
-                  src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : '4'}.png`} 
+                  src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
                   alt={selectedPlanet} 
-                  className="fullscreen-planet-image" 
+                  className="fullscreen-planet-image"
+                  loading="eager"
+                  decoding="async"
                 />
                 <div className="planet-glow"></div>
               </div>
@@ -384,31 +392,31 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/HTML.png" alt="HTML" />
+                              <img src="/HTML.png" alt="HTML" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">HTML</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/CSS.png" alt="CSS" />
+                              <img src="/CSS.png" alt="CSS" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">CSS</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/JAVASCRIPT.png" alt="JavaScript" />
+                              <img src="/JAVASCRIPT.png" alt="JavaScript" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">JavaScript</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/REACT.png" alt="React.js" />
+                              <img src="/REACT.png" alt="React.js" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">React.js</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/NEXTJS.png" alt="Next.js" />
+                              <img src="/NEXTJS.png" alt="Next.js" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Next.js</span>
                           </div>
@@ -420,19 +428,19 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/PYTHON.png" alt="Python" />
+                              <img src="/PYTHON.png" alt="Python" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Python</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/NODEJS.png" alt="Node.js" />
+                              <img src="/NODEJS.png" alt="Node.js" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Node.js</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/spring-boot.png" alt="Spring Boot" />
+                              <img src="/spring-boot.png" alt="Spring Boot" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Spring Boot</span>
                           </div>
@@ -444,13 +452,13 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/SQL.png" alt="SQL" />
+                              <img src="/SQL.png" alt="SQL" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">SQL</span>
                           </div>
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/FIREBASE.png" alt="Firebase" />
+                              <img src="/FIREBASE.png" alt="Firebase" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Firebase</span>
                           </div>
@@ -462,7 +470,7 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/PROMPT.png" alt="Prompt Engineering" />
+                              <img src="/PROMPT.png" alt="Prompt Engineering" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Prompt Engineering</span>
                           </div>
@@ -474,7 +482,7 @@ export function App() {
                         <div className="skills-list">
                           <div className="skill-item">
                             <div className="skill-logo">
-                              <img src="/CANVA.png" alt="Canva" />
+                              <img src="/CANVA.png" alt="Canva" loading="lazy" decoding="async" />
                             </div>
                             <span className="skill-text">Canva</span>
                           </div>
@@ -552,9 +560,9 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            <img src="/HTML.png" alt="HTML" className="tech-icon" />
-                            <img src="/CSS.png" alt="CSS" className="tech-icon" />
-                            <img src="/JAVASCRIPT.png" alt="JavaScript" className="tech-icon" />
+                            <img src="/HTML.png" alt="HTML" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/CSS.png" alt="CSS" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/JAVASCRIPT.png" alt="JavaScript" className="tech-icon" loading="lazy" decoding="async" />
                             
                           </div>
                         </div>
@@ -572,8 +580,8 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            <img src="/PYTHON.png" alt="Python" className="tech-icon" />
-                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" />
+                            <img src="/PYTHON.png" alt="Python" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" loading="lazy" decoding="async" />
                           </div>
                         </div>
                       </div>
@@ -590,8 +598,8 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            <img src="/PYTHON.png" alt="Python" className="tech-icon" />
-                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" />
+                            <img src="/PYTHON.png" alt="Python" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" loading="lazy" decoding="async" />
                           </div>
                         </div>
                       </div>
@@ -608,8 +616,8 @@ export function App() {
                         <div className="tech-stack">
                           <h4 className="tech-title">Tech Stack</h4>
                           <div className="tech-icons">
-                            <img src="/flutter.png" alt="React" className="tech-icon" />
-                            <img src="/FIREBASE.png" alt="Firebase" className="tech-icon" />
+                            <img src="/flutter.png" alt="React" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/FIREBASE.png" alt="Firebase" className="tech-icon" loading="lazy" decoding="async" />
                           </div>
                         </div>
                       </div>
@@ -632,10 +640,96 @@ export function App() {
                         <div className="experience-tech-stack">
                           <h4 className="tech-title">Technologies Used</h4>
                           <div className="tech-icons">
-                            <img src="/NEXTJS.png" alt="Next.js" className="tech-icon" />
-                            <img src="/spring-boot.png" alt="Spring-boot" className="tech-icon" />
-                            <img src="/SQL.png" alt="SQL" className="tech-icon" />
+                            <img src="/NEXTJS.png" alt="Next.js" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/spring-boot.png" alt="Spring-boot" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/SQL.png" alt="SQL" className="tech-icon" loading="lazy" decoding="async" />
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedPlanet === 'Certifications' ? (
+                    <div className="certifications-content">
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">Make4Mysore Hackathon</h3>
+                        </div>
+                        <div className="certification-issuer">IEEE Smart Cities</div>
+                        <div className="certification-date">October 2024</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Hackathon Participation</span>
+                          <a href="https://drive.google.com/file/d/10NS5_O7EnMjznG5IuaI9_C-F1jEBCqOR/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">HacXerve</h3>
+                        </div>
+                        <div className="certification-issuer">VVCE (Vidyavardhaka College)</div>
+                        <div className="certification-date">February 2025</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Hackathon Participation</span>
+                          <a href="https://drive.google.com/file/d/10haF9m6R7h18eOY_6o9IXYADV-iF-ytX/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">Programming in Java</h3>
+                        </div>
+                        <div className="certification-issuer">NPTEL</div>
+                        <div className="certification-date">October 2024</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Course Completion</span>
+                          <a href="https://drive.google.com/file/d/10Ipdhsux5O6aX9E894qazCOyAaRo_8gr/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">Programming in Modern C++</h3>
+                        </div>
+                        <div className="certification-issuer">NPTEL</div>
+                        <div className="certification-date">April 2024</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Course Completion</span>
+                          <a href="https://drive.google.com/file/d/10Ipdhsux5O6aX9E894qazCOyAaRo_8gr/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">Prompthon</h3>
+                        </div>
+                        <div className="certification-issuer">IVIS Lab</div>
+                        <div className="certification-date">February 2025</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Event Participation</span>
+                          <a href="https://drive.google.com/file/d/10Ip2teZ4piB1VhAiC93zRoUxbY0bBQGT/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">Teckavishkar 2.0</h3>
+                        </div>
+                        <div className="certification-issuer">ATME College of Engineering</div>
+                        <div className="certification-date">May 2025</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Event Participation</span>
+                          <a href="https://drive.google.com/file/d/18lwesUQxbf3wdeQXi22Dq6dSfzIcsIAu/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -653,12 +747,14 @@ export function App() {
         {/* Background Video */}
         <video
           ref={backgroundVideoRef}
-          className={`background-video ${videoLoaded ? 'loaded' : ''}`}
+          className={`background-video ${backgroundVideoLoaded ? 'loaded' : ''}`}
           autoPlay
           loop
           muted
           playsInline
-          onLoadedData={() => setVideoLoaded(true)}
+          preload="metadata"
+          onLoadedData={() => setBackgroundVideoLoaded(true)}
+          onCanPlay={() => setBackgroundVideoLoaded(true)}
         >
           <source src="/space1.mp4" type="video/mp4" />
         </video>
@@ -667,35 +763,44 @@ export function App() {
         <div className="hud-interface">
           {/* About Me Planet - Bottom Left */}
           <div className="planet-card about-me" onClick={(e) => handlePlanetClick('About Me', e)}>
-            <img src="/planet1.png" alt="About Me" className="planet-image" />
+            <img src="/planet1.png" alt="About Me" className="planet-image" loading="eager" decoding="async" />
             <div className="planet-label">
-              <span className="label-text">About Me</span>
+              <span className="label-text">Cosmic Profile</span>
             </div>
           </div>
 
           {/* Skills Planet - Top Left */}
           <div className="planet-card skills" onClick={(e) => handlePlanetClick('Skills', e)}>
-            <img src="/planet2.png" alt="Skills" className="planet-image" />
+            <img src="/planet2.png" alt="Skills" className="planet-image" loading="eager" decoding="async" />
             <div className="planet-label">
-              <span className="label-text">Skills</span>
+              <span className="label-text">Asteroid Belt of Skills</span>
             </div>
           </div>
 
           {/* Projects Planet - Top Right */}
           <div className="planet-card projects" onClick={(e) => handlePlanetClick('Projects', e)}>
-            <img src="/planet3.png" alt="Projects" className="planet-image" />
+            <img src="/planet3.png" alt="Projects" className="planet-image" loading="eager" decoding="async" />
             <div className="planet-label">
-              <span className="label-text">Projects</span>
+              <span className="label-text">Cosmic Creations</span>
             </div>
           </div>
 
           {/* Experience Planet - Bottom Right */}
           <div className="planet-card experience" onClick={(e) => handlePlanetClick('Experience', e)}>
-            <img src="/planet4.png" alt="Experience" className="planet-image" />
+            <img src="/planet4.png" alt="Experience" className="planet-image" loading="eager" decoding="async" />
             <div className="planet-label">
-              <span className="label-text">Experience</span>
+              <span className="label-text">Journey Through Space-Time</span>
             </div>
           </div>
+
+          {/* Certifications Planet - Center Left */}
+          <div className="planet-card certifications" onClick={(e) => handlePlanetClick('Certifications', e)}>
+            <img src="/planet5.png" alt="Certifications" className="planet-image" loading="eager" decoding="async" />
+            <div className="planet-label">
+              <span className="label-text">Constellation of Proof</span>
+            </div>
+          </div>
+
         </div>
       </div>
     )
@@ -719,12 +824,14 @@ export function App() {
       <div className="video-container">
         <video
           ref={videoRef}
-          className="background-video"
+          className={`background-video ${videoLoaded ? 'loaded' : ''}`}
           autoPlay
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
+          onLoadedData={() => setVideoLoaded(true)}
+          onCanPlay={() => setVideoLoaded(true)}
         >
           <source src="/Intro.mp4" type="video/mp4" />
         </video>
@@ -734,10 +841,13 @@ export function App() {
       {showTransitionVideo && (
         <div className="transition-video-overlay">
           <video
-            className="transition-video"
+            className={`transition-video ${transitionVideoLoaded ? 'loaded' : ''}`}
             autoPlay
             muted
             playsInline
+            preload="metadata"
+            onLoadedData={() => setTransitionVideoLoaded(true)}
+            onCanPlay={() => setTransitionVideoLoaded(true)}
           >
             <source src="/Transition.mp4" type="video/mp4" />
           </video>
