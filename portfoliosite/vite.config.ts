@@ -34,14 +34,8 @@ export default defineConfig({
         entryFileNames: 'assets/js/[name]-[hash].js',
       },
     },
-    // Enable compression
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    } as any,
+    // Enable compression (using esbuild for better performance)
+    minify: 'esbuild',
     // Optimize CSS
     cssCodeSplit: true,
     // Source maps for production debugging
