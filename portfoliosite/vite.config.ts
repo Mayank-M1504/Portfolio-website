@@ -15,8 +15,10 @@ export default defineConfig({
         },
         // Optimize asset file names
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
-          const ext = info[info.length - 1]
+          if (!assetInfo.name) {
+            return `assets/[name]-[hash][extname]`
+          }
+          
           if (/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/i.test(assetInfo.name)) {
             return `assets/videos/[name]-[hash][extname]`
           }
@@ -39,7 +41,7 @@ export default defineConfig({
         drop_console: true,
         drop_debugger: true,
       },
-    },
+    } as any,
     // Optimize CSS
     cssCodeSplit: true,
     // Source maps for production debugging
