@@ -22,6 +22,9 @@ export function App() {
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false)
   const [transitionVideoLoaded, setTransitionVideoLoaded] = useState(false)
+  const [imagesLoaded, setImagesLoaded] = useState(0)
+  const [totalImages, setTotalImages] = useState(5)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true)
   const [showPlanetReturn, setShowPlanetReturn] = useState(false)
   const [showTransitionVideo, setShowTransitionVideo] = useState(false)
   const [textFading, setTextFading] = useState(false)
@@ -101,6 +104,47 @@ export function App() {
     return () => clearInterval(interval)
   }, [])
 
+  // Preload critical images
+  useEffect(() => {
+    const imageUrls = [
+      '/planet1.png',
+      '/planet2.png', 
+      '/planet3.png',
+      '/planet4.png',
+      '/planet5.png'
+    ]
+    
+    let loadedCount = 0
+    const totalCount = imageUrls.length
+    
+    imageUrls.forEach(url => {
+      const img = new Image()
+      img.onload = () => {
+        loadedCount++
+        setImagesLoaded(loadedCount)
+        if (loadedCount === totalCount) {
+          setTotalImages(totalCount)
+        }
+      }
+      img.onerror = () => {
+        loadedCount++
+        setImagesLoaded(loadedCount)
+        if (loadedCount === totalCount) {
+          setTotalImages(totalCount)
+        }
+      }
+      img.src = url
+    })
+  }, [])
+
+  // Hide loading screen when video and images are loaded
+  useEffect(() => {
+    if (videoLoaded && imagesLoaded >= totalImages) {
+      setTimeout(() => {
+        setShowLoadingScreen(false)
+      }, 500) // Small delay for smooth transition
+    }
+  }, [videoLoaded, imagesLoaded, totalImages])
 
   // Handle enter space button click
   const handleEnterSpace = () => {
@@ -761,7 +805,15 @@ export function App() {
         <div className="hud-interface">
           {/* About Me Planet - Bottom Left */}
           <div className="planet-card about-me" onClick={(e) => handlePlanetClick('About Me', e)}>
-            <img src="/planet1.png" alt="About Me" className="planet-image" loading="eager" decoding="async" />
+            <img 
+              src="/planet1.png" 
+              alt="About Me" 
+              className="planet-image" 
+              loading="eager" 
+              decoding="async"
+              fetchpriority="high"
+              onLoad={() => console.log('Planet 1 loaded')}
+            />
             <div className="planet-label">
               <span className="label-text">Cosmic Profile</span>
             </div>
@@ -769,7 +821,15 @@ export function App() {
 
           {/* Skills Planet - Top Left */}
           <div className="planet-card skills" onClick={(e) => handlePlanetClick('Skills', e)}>
-            <img src="/planet2.png" alt="Skills" className="planet-image" loading="eager" decoding="async" />
+            <img 
+              src="/planet2.png" 
+              alt="Skills" 
+              className="planet-image" 
+              loading="eager" 
+              decoding="async"
+              fetchpriority="high"
+              onLoad={() => console.log('Planet 2 loaded')}
+            />
             <div className="planet-label">
               <span className="label-text">Asteroid Belt of Skills</span>
             </div>
@@ -777,7 +837,15 @@ export function App() {
 
           {/* Projects Planet - Top Right */}
           <div className="planet-card projects" onClick={(e) => handlePlanetClick('Projects', e)}>
-            <img src="/planet3.png" alt="Projects" className="planet-image" loading="eager" decoding="async" />
+            <img 
+              src="/planet3.png" 
+              alt="Projects" 
+              className="planet-image" 
+              loading="eager" 
+              decoding="async"
+              fetchpriority="high"
+              onLoad={() => console.log('Planet 3 loaded')}
+            />
             <div className="planet-label">
               <span className="label-text">Cosmic Creations</span>
             </div>
@@ -785,7 +853,15 @@ export function App() {
 
           {/* Experience Planet - Bottom Right */}
           <div className="planet-card experience" onClick={(e) => handlePlanetClick('Experience', e)}>
-            <img src="/planet4.png" alt="Experience" className="planet-image" loading="eager" decoding="async" />
+            <img 
+              src="/planet4.png" 
+              alt="Experience" 
+              className="planet-image" 
+              loading="eager" 
+              decoding="async"
+              fetchpriority="high"
+              onLoad={() => console.log('Planet 4 loaded')}
+            />
             <div className="planet-label">
               <span className="label-text">Journey Through Space-Time</span>
             </div>
@@ -793,7 +869,15 @@ export function App() {
 
           {/* Certifications Planet - Center Left */}
           <div className="planet-card certifications" onClick={(e) => handlePlanetClick('Certifications', e)}>
-            <img src="/planet5.png" alt="Certifications" className="planet-image" loading="eager" decoding="async" />
+            <img 
+              src="/planet5.png" 
+              alt="Certifications" 
+              className="planet-image" 
+              loading="eager" 
+              decoding="async"
+              fetchpriority="high"
+              onLoad={() => console.log('Planet 5 loaded')}
+            />
             <div className="planet-label">
               <span className="label-text">Constellation of Proof</span>
             </div>
@@ -806,6 +890,27 @@ export function App() {
 
   return (
     <div className="portfolio-container">
+      {/* Loading Screen */}
+      {showLoadingScreen && (
+        <div className="loading-screen">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading Universe...</div>
+            <div className="loading-progress">
+              <div 
+                className="loading-bar" 
+                style={{ 
+                  width: `${Math.round(((videoLoaded ? 1 : 0) + imagesLoaded) / (1 + totalImages) * 100)}%` 
+                }}
+              ></div>
+            </div>
+            <div className="loading-percentage">
+              {Math.round(((videoLoaded ? 1 : 0) + imagesLoaded) / (1 + totalImages) * 100)}%
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Custom Cursor */}
       <div 
         className={`custom-cursor ${isHovering ? 'hovering' : ''}`}
@@ -827,9 +932,10 @@ export function App() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           onLoadedData={() => setVideoLoaded(true)}
           onCanPlay={() => setVideoLoaded(true)}
+          onLoadStart={() => console.log('Video loading started')}
         >
           <source src="/Intro.mp4" type="video/mp4" />
         </video>
