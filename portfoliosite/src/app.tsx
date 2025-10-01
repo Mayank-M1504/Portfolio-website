@@ -22,9 +22,6 @@ export function App() {
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false)
   const [transitionVideoLoaded, setTransitionVideoLoaded] = useState(false)
-  const [showExaminingText, setShowExaminingText] = useState(false)
-  const [examiningText, setExaminingText] = useState('')
-  const [showExaminingCursor, setShowExaminingCursor] = useState(true)
   const [showPlanetReturn, setShowPlanetReturn] = useState(false)
   const [showTransitionVideo, setShowTransitionVideo] = useState(false)
   const [textFading, setTextFading] = useState(false)
@@ -104,48 +101,6 @@ export function App() {
     return () => clearInterval(interval)
   }, [])
 
-  // Typing effect for examining text
-  useEffect(() => {
-    if (!showExaminingText) {
-      setExaminingText('')
-      return
-    }
-
-    const fullText = "Examining planet..."
-    let currentIndex = 0
-    let timeoutId: number
-
-    const typeText = () => {
-      if (currentIndex < fullText.length) {
-        setExaminingText(fullText.slice(0, currentIndex + 1))
-        currentIndex++
-        timeoutId = setTimeout(typeText, 120) // 120ms delay between characters
-      } else {
-        setShowExaminingCursor(true)
-      }
-    }
-
-    // Start typing after a short delay
-    const startTyping = setTimeout(() => {
-      typeText()
-    }, 300)
-
-    return () => {
-      clearTimeout(startTyping)
-      clearTimeout(timeoutId)
-    }
-  }, [showExaminingText])
-
-  // Cursor blinking effect for examining text
-  useEffect(() => {
-    if (!showExaminingText) return
-
-    const interval = setInterval(() => {
-      setShowExaminingCursor(prev => !prev)
-    }, 500) // Blink every 500ms
-
-    return () => clearInterval(interval)
-  }, [showExaminingText])
 
   // Handle enter space button click
   const handleEnterSpace = () => {
@@ -213,16 +168,10 @@ export function App() {
     setSelectedPlanet(planetName)
     setShowPlanetTransition(true)
     
-    // After planet scale animation, show black screen with typing
+    // After planet scale animation, directly show modal
     setTimeout(() => {
       setShowPlanetTransition(false)
-      setShowExaminingText(true)
-      
-      // After typing completes, show modal
-      setTimeout(() => {
-        setShowModal(true)
-        setShowExaminingText(false)
-      }, 3000) // Duration for typing animation
+      setShowModal(true)
     }, 1500) // Duration of planet scale animation
   }
 
@@ -290,11 +239,9 @@ export function App() {
         </div>
 
         {/* Back to Home Arrow */}
-        {!showExaminingText && (
-          <div className="back-arrow" onClick={handleBackToHome}>
-            <div className="arrow-icon">↑</div>
-          </div>
-        )}
+        <div className="back-arrow" onClick={handleBackToHome}>
+          <div className="arrow-icon">↑</div>
+        </div>
 
         {/* Bright overlay for back transition */}
         {showBackTransition && (
@@ -322,15 +269,6 @@ export function App() {
           </div>
         )}
 
-        {/* Black screen with examining text */}
-        {showExaminingText && (
-          <div className="examining-screen">
-            <div className="examining-text">
-              {examiningText}
-              <span className={`typing-cursor ${showExaminingCursor ? 'visible' : 'hidden'}`}>_</span>
-            </div>
-          </div>
-        )}
 
         {/* Planet return animation */}
         {showPlanetReturn && (
@@ -491,7 +429,10 @@ export function App() {
                     </div>
                   ) : selectedPlanet === 'About Me' ? (
                     <div className="about-content">
-                      <div className="about-section">
+                      <div className="about-section profile-section">
+                        <div className="profile-picture-container">
+                          <img src="/ProfessionalPhotoBG.jpg" alt="Profile Picture" className="profile-picture" loading="lazy" decoding="async" />
+                        </div>
                         <p className="about-description">
                           I am a passionate software developer with a strong enthusiasm for creating innovative and efficient
                           solutions. I enjoy exploring new technologies, solving complex problems, and continuously improving my
@@ -621,6 +562,49 @@ export function App() {
                           </div>
                         </div>
                       </div>
+
+                      <div className="project-item">
+                        <h3 className="project-title">Admission Automation System</h3>
+                        <p className="project-description">
+                          The Admission Automation System streamlines the student enrollment process by digitizing document submission, 
+                          verification, and approval. Colleges upload student documents, which are automatically verified using OCR and 
+                          AI-based validation. Verified data is securely stored in a database, and admission status is instantly updated 
+                          on the university portal.
+                        </p>
+                        <div className="project-impact">
+                          <span className="impact-text">Eliminates manual errors and reduces processing time</span>
+                        </div>
+                        <div className="tech-stack">
+                          <h4 className="tech-title">Tech Stack</h4>
+                          <div className="tech-icons">
+                            <img src="/PYTHON.png" alt="Python" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/REACT.png" alt="React" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/PROMPT.png" alt="AI/ML" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/SQL.png" alt="SQL" className="tech-icon" loading="lazy" decoding="async" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="project-item">
+                        <h3 className="project-title">FluffWalks <span className="project-status">(Under Progress)</span></h3>
+                        <p className="project-description">
+                          FluffWalks is a smart pet-walking and care management system designed to simplify pet owners' daily routines. 
+                          It connects pet owners with trusted walkers, enables real-time tracking of walks, and ensures pet safety with 
+                          route monitoring and activity logs. The platform enhances convenience while creating a reliable ecosystem for 
+                          both pet parents and walkers.
+                        </p>
+                        <div className="project-impact">
+                          <span className="impact-text">Smart pet care management platform</span>
+                        </div>
+                        <div className="tech-stack">
+                          <h4 className="tech-title">Tech Stack</h4>
+                          <div className="tech-icons">
+                            <img src="/REACT.png" alt="React" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/NODEJS.png" alt="Node.js" className="tech-icon" loading="lazy" decoding="async" />
+                            <img src="/SQL.png" alt="SQL" className="tech-icon" loading="lazy" decoding="async" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : selectedPlanet === 'Experience' ? (
                     <div className="experience-content">
@@ -728,6 +712,20 @@ export function App() {
                         <div className="certification-credential">
                           <span className="credential-text">Event Participation</span>
                           <a href="https://drive.google.com/file/d/18lwesUQxbf3wdeQXi22Dq6dSfzIcsIAu/view" target="_blank" rel="noopener noreferrer" className="certification-link">
+                            View Certificate →
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="certification-item">
+                        <div className="certification-header">
+                          <h3 className="certification-title">HackFusion1.0</h3>
+                        </div>
+                        <div className="certification-issuer">MIT Mysore</div>
+                        <div className="certification-date">September 2025</div>
+                        <div className="certification-credential">
+                          <span className="credential-text">Hackathon</span>
+                          <a href="https://drive.google.com/file/d/1l5pp0R_qlw3mSHrpYRcXl1Oj_uJUSXQf/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="certification-link">
                             View Certificate →
                           </a>
                         </div>
