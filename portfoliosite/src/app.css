@@ -119,6 +119,25 @@ video {
   transition: opacity 0.8s ease-in-out;
 }
 
+/* Transition video optimizations */
+.transition-video {
+  will-change: opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.transition-video.loaded {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Selection background video optimizations */
+.selection-bg-image {
+  will-change: opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 /* Optimize animations */
 @media (prefers-reduced-motion: reduce) {
   *,

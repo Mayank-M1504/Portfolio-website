@@ -104,7 +104,7 @@ export function App() {
     return () => clearInterval(interval)
   }, [])
 
-  // Preload critical images
+  // Preload critical images and videos
   useEffect(() => {
     const imageUrls = [
       '/planet1.png',
@@ -114,9 +114,16 @@ export function App() {
       '/planet5.png'
     ]
     
-    let loadedCount = 0
-    const totalCount = imageUrls.length
+    const videoUrls = [
+      '/Intro.mp4',
+      '/Transition.mp4',
+      '/space1.mp4'
+    ]
     
+    let loadedCount = 0
+    const totalCount = imageUrls.length + videoUrls.length
+    
+    // Preload images
     imageUrls.forEach(url => {
       const img = new Image()
       img.onload = () => {
@@ -134,6 +141,29 @@ export function App() {
         }
       }
       img.src = url
+    })
+    
+    // Preload videos
+    videoUrls.forEach(url => {
+      const video = document.createElement('video')
+      video.preload = 'auto'
+      video.muted = true
+      video.onloadeddata = () => {
+        loadedCount++
+        setImagesLoaded(loadedCount)
+        if (loadedCount === totalCount) {
+          setTotalImages(totalCount)
+        }
+      }
+      video.onerror = () => {
+        loadedCount++
+        setImagesLoaded(loadedCount)
+        if (loadedCount === totalCount) {
+          setTotalImages(totalCount)
+        }
+      }
+      video.src = url
+      video.load()
     })
   }, [])
 
@@ -794,9 +824,10 @@ export function App() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           onLoadedData={() => setBackgroundVideoLoaded(true)}
           onCanPlay={() => setBackgroundVideoLoaded(true)}
+          onLoadStart={() => console.log('Space background video loading started')}
         >
           <source src="/space1.mp4" type="video/mp4" />
         </video>
@@ -935,7 +966,7 @@ export function App() {
           preload="auto"
           onLoadedData={() => setVideoLoaded(true)}
           onCanPlay={() => setVideoLoaded(true)}
-          onLoadStart={() => console.log('Video loading started')}
+          onLoadStart={() => console.log('Background video loading started')}
         >
           <source src="/Intro.mp4" type="video/mp4" />
         </video>
@@ -949,9 +980,10 @@ export function App() {
             autoPlay
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             onLoadedData={() => setTransitionVideoLoaded(true)}
             onCanPlay={() => setTransitionVideoLoaded(true)}
+            onLoadStart={() => console.log('Transition video loading started')}
           >
             <source src="/Transition.mp4" type="video/mp4" />
           </video>
