@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ffmpeg": "^0.0.4",
     "preact": "^10.27.2"
   },
   "devDependencies": {
