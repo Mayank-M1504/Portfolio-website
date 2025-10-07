@@ -1372,6 +1372,14 @@ export function App() {
         <img src="/earth.png" alt="Earth" className="earth-image" loading="lazy" decoding="async" />
       </div>
 
+      {/* Mobile Note */}
+      <div className={`mobile-note ${textFading ? 'fading' : ''}`}>
+        <div className="mobile-note-content">
+          <div className="mobile-note-icon">📱</div>
+          <div className="mobile-note-text">Please view in Desktop for best experience</div>
+        </div>
+      </div>
+
       {/* Enter Space Button */}
       {showButton && (
         <div className="enter-space-container">

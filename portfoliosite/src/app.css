@@ -398,6 +398,11 @@ button, a, [onclick], [role="button"], .clickable, .planet-card {
   opacity: 0;
 }
 
+/* Mobile Note - Hidden on Desktop */
+.mobile-note {
+  display: none;
+}
+
 .earth-glow {
   position: absolute;
   top: 50%;
@@ -3095,6 +3100,50 @@ button, a, [onclick], [role="button"], .clickable, .planet-card {
   .scroll-text {
     font-size: 0.75rem;
     padding: 5px 10px;
+    white-space: nowrap;
+  }
+
+  /* Mobile Note - Visible on Mobile */
+  .mobile-note {
+    display: block;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    transition: opacity 1s ease-out;
+  }
+
+  .mobile-note.fading {
+    opacity: 0;
+  }
+
+  .mobile-note-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(139, 92, 246, 0.9);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 10px 16px;
+    box-shadow: 
+      0 8px 32px rgba(139, 92, 246, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .mobile-note-icon {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+
+  .mobile-note-text {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Neue Machina', sans-serif;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
   }
 }
