@@ -754,7 +754,7 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
+                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
                 className="scaling-planet-image"
                 loading="eager"
@@ -776,7 +776,7 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
+                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
                 className="returning-planet-image"
                 loading="eager"
@@ -800,7 +800,7 @@ export function App() {
               {/* Left side - Planet Image */}
               <div className="planet-section">
                 <img 
-                  src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
+                  src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                   alt={selectedPlanet} 
                   className="fullscreen-planet-image"
                   loading="eager"
@@ -1101,7 +1101,7 @@ export function App() {
                         </div>
                       </div>
                     </div>
-                  ) : selectedPlanet === 'Journey Through Space-Time' ? (
+                  ) : selectedPlanet === 'Journey Through Space' ? (
                     <div className="experience-content">
                       <div className="experience-item">
                         <div className="experience-header">
