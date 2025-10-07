@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 import './app.css'
 
 export function App() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const backgroundVideoRef = useRef<HTMLVideoElement>(null)
+  const starCanvasRef = useRef<HTMLCanvasElement>(null)
+  const homeStarCanvasRef = useRef<HTMLCanvasElement>(null)
+  const transitionStarCanvasRef = useRef<HTMLCanvasElement>(null)
   const [showTransition, setShowTransition] = useState(false)
   const [showFinalImage, setShowFinalImage] = useState(false)
   const [displayedText, setDisplayedText] = useState('')
@@ -20,8 +21,7 @@ export function App() {
   const [planetPosition, setPlanetPosition] = useState({ x: 0, y: 0 })
   const [isClosing, setIsClosing] = useState(false)
   const [videoLoaded, setVideoLoaded] = useState(false)
-  const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false)
-  const [transitionVideoLoaded, setTransitionVideoLoaded] = useState(false)
+  // kept for className compatibility; no state changes required
   const [imagesLoaded, setImagesLoaded] = useState(0)
   const [totalImages, setTotalImages] = useState(5)
   const [showLoadingScreen, setShowLoadingScreen] = useState(true)
@@ -29,10 +29,13 @@ export function App() {
   const [showTransitionVideo, setShowTransitionVideo] = useState(false)
   const [textFading, setTextFading] = useState(false)
   const [showButton, setShowButton] = useState(true)
+  const [currentOrbitIndex, setCurrentOrbitIndex] = useState(0)
+  const [orbitRotationDeg, setOrbitRotationDeg] = useState(0)
+  const orbitRef = useRef<HTMLDivElement>(null)
 
   // Typing effect for title text
   useEffect(() => {
-    const fullText = "Mayank's Portfolio"
+    const fullText = "Mayank’s Cosmos"
     let currentIndex = 0
     let timeoutId: number
 
@@ -115,9 +118,7 @@ export function App() {
     ]
     
     const videoUrls = [
-      '/Intro.mp4',
-      '/Transition.mp4',
-      '/space1.mp4'
+      '/Transition.mp4'
     ]
     
     let loadedCount = 0
@@ -167,6 +168,372 @@ export function App() {
     })
   }, [])
 
+  // Initialize canvas starfield for Home (when not in selection page)
+  useEffect(() => {
+    if (showFinalImage) return
+    
+    const initHomeStarfield = () => {
+      const canvas = homeStarCanvasRef.current
+      if (!canvas) {
+        setTimeout(initHomeStarfield, 100)
+        return
+      }
+      
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        setTimeout(initHomeStarfield, 100)
+        return
+      }
+
+      let animationFrameId = 0
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
+
+      const resize = () => {
+        const { innerWidth, innerHeight } = window
+        canvas.width = Math.floor(innerWidth * dpr)
+        canvas.height = Math.floor(innerHeight * dpr)
+        canvas.style.width = innerWidth + 'px'
+        canvas.style.height = innerHeight + 'px'
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      }
+
+      resize()
+      window.addEventListener('resize', resize)
+
+      type Star = { x: number; y: number; size: number; speed: number; dir: 'v' | 'h' }
+      const stars: Star[] = []
+      const createStars = (count: number) => {
+        stars.length = 0
+        const { innerWidth, innerHeight } = window
+        for (let i = 0; i < count; i++) {
+          const isVertical = i % 2 === 0
+          const size = Math.random() < 0.15 ? 2.4 : Math.random() < 0.35 ? 1.8 : 1.1
+          const speedBase = isVertical ? 18 : 16
+          const speedJitter = Math.random() * 10
+          stars.push({
+            x: Math.random() * innerWidth,
+            y: Math.random() * innerHeight,
+            size,
+            speed: speedBase + speedJitter,
+            dir: isVertical ? 'v' : 'h'
+          })
+        }
+      }
+
+      const density = Math.floor((window.innerWidth * window.innerHeight) / 18000)
+      createStars(Math.max(120, Math.min(320, density)))
+
+      const draw = () => {
+        try {
+          const { innerWidth, innerHeight } = window
+          ctx.fillStyle = '#000'
+          ctx.fillRect(0, 0, innerWidth, innerHeight)
+
+          ctx.fillStyle = '#fff'
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i]
+            if (s.dir === 'v') {
+              s.y += s.speed * 0.016
+              if (s.y > innerHeight + 5) {
+                s.y = -5
+                s.x = Math.random() * innerWidth
+              }
+            } else {
+              s.x += s.speed * 0.016
+              if (s.x > innerWidth + 5) {
+                s.x = -5
+                s.y = Math.random() * innerHeight
+              }
+            }
+            if (s.size <= 1.2) {
+              ctx.fillRect(s.x, s.y, 1, 1)
+            } else {
+              ctx.beginPath()
+              ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2)
+              ctx.fill()
+            }
+          }
+
+          animationFrameId = requestAnimationFrame(draw)
+        } catch (error) {
+          console.warn('Home star animation error:', error)
+          setTimeout(() => {
+            animationFrameId = requestAnimationFrame(draw)
+          }, 100)
+        }
+      }
+
+      // Mark video loaded equivalent once canvas is ready
+      setVideoLoaded(true)
+      animationFrameId = requestAnimationFrame(draw)
+
+      return () => {
+        cancelAnimationFrame(animationFrameId)
+        window.removeEventListener('resize', resize)
+      }
+    }
+
+    const cleanup = initHomeStarfield()
+    return cleanup
+  }, [showFinalImage])
+
+  // Fast starfield during transition overlay (replaces Transition.mp4)
+  useEffect(() => {
+    if (!showTransitionVideo) return
+    
+    const initTransitionStarfield = () => {
+      const canvas = transitionStarCanvasRef.current
+      if (!canvas) {
+        setTimeout(initTransitionStarfield, 100)
+        return
+      }
+      
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        setTimeout(initTransitionStarfield, 100)
+        return
+      }
+
+      let animationFrameId = 0
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
+
+      type Star = { x: number; y: number; size: number; speed: number; z: number; maxZ: number }
+      const stars: Star[] = []
+
+      const resize = () => {
+        const { innerWidth, innerHeight } = window
+        canvas.width = Math.floor(innerWidth * dpr)
+        canvas.height = Math.floor(innerHeight * dpr)
+        canvas.style.width = innerWidth + 'px'
+        canvas.style.height = innerHeight + 'px'
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      }
+      resize()
+      window.addEventListener('resize', resize)
+      const createStars = (count: number) => {
+        stars.length = 0
+        const { innerWidth, innerHeight } = window
+        
+        console.log('Creating', count, 'stars for space travel effect')
+        
+        for (let i = 0; i < count; i++) {
+          const size = Math.random() < 0.15 ? 3.0 : Math.random() < 0.35 ? 2.0 : 1.2
+          const speedBase = 120
+          const speedJitter = Math.random() * 40
+          const z = Math.random() * 1000 // Random depth
+          const maxZ = 1000
+          
+          stars.push({
+            x: Math.random() * innerWidth,
+            y: Math.random() * innerHeight,
+            size,
+            speed: speedBase + speedJitter,
+            z,
+            maxZ
+          })
+        }
+        
+        console.log('Created', stars.length, 'stars for space travel')
+      }
+      const density = Math.floor((window.innerWidth * window.innerHeight) / 18000)
+      createStars(Math.max(140, Math.min(360, density)))
+
+      const draw = () => {
+        try {
+          const { innerWidth, innerHeight } = window
+          ctx.fillStyle = '#000'
+          ctx.fillRect(0, 0, innerWidth, innerHeight)
+          
+          // Pre-calculate constants for better performance
+          const centerX = innerWidth * 0.5
+          const centerY = innerHeight * 0.5
+          const deltaTime = 0.016
+          
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i]
+            
+            // Move star towards viewer (decrease z)
+            s.z -= s.speed * deltaTime
+            
+            // Reset star if it gets too close (z <= 0)
+            if (s.z <= 0) {
+              s.z = s.maxZ
+              s.x = Math.random() * innerWidth
+              s.y = Math.random() * innerHeight
+            }
+            
+            // Calculate screen position based on z-depth (perspective projection)
+            const scale = 200 / s.z // Perspective scaling
+            const screenX = centerX + (s.x - centerX) * scale
+            const screenY = centerY + (s.y - centerY) * scale
+            
+            // Only draw if star is on screen (early exit for better performance)
+            if (screenX < 0 || screenX > innerWidth || screenY < 0 || screenY > innerHeight) {
+              continue
+            }
+            
+            // Calculate brightness based on distance (closer = brighter)
+            const brightness = Math.max(0.1, 1 - (s.z / s.maxZ))
+            const alpha = Math.min(1, brightness * 2)
+            
+            // Set star color with brightness
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
+            
+            // Draw star with size based on distance
+            const starSize = Math.max(0.5, s.size * scale)
+            if (starSize <= 1.5) {
+              ctx.fillRect(screenX, screenY, 1, 1)
+            } else {
+              ctx.beginPath()
+              ctx.arc(screenX, screenY, starSize * 0.5, 0, Math.PI * 2)
+              ctx.fill()
+            }
+          }
+          animationFrameId = requestAnimationFrame(draw)
+        } catch (error) {
+          console.warn('Transition star animation error:', error)
+          setTimeout(() => {
+            animationFrameId = requestAnimationFrame(draw)
+          }, 100)
+        }
+      }
+      
+      console.log('Starting transition star animation with', stars.length, 'stars')
+      
+      // Use requestIdleCallback for better performance if available
+      const startAnimation = () => {
+        animationFrameId = requestAnimationFrame(draw)
+      }
+      
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(startAnimation)
+      } else {
+        startAnimation()
+      }
+
+      return () => {
+        cancelAnimationFrame(animationFrameId)
+        window.removeEventListener('resize', resize)
+      }
+    }
+
+    const cleanup = initTransitionStarfield()
+    return cleanup
+  }, [showTransitionVideo])
+
+  // Initialize canvas starfield for selection page
+  useEffect(() => {
+    if (!showFinalImage) return // Only run when selection page is visible
+    
+    const initSelectionStarfield = () => {
+      const canvas = starCanvasRef.current
+      if (!canvas) {
+        setTimeout(initSelectionStarfield, 100)
+        return
+      }
+      
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        setTimeout(initSelectionStarfield, 100)
+        return
+      }
+
+      let animationFrameId = 0
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
+
+      const resize = () => {
+        const { innerWidth, innerHeight } = window
+        canvas.width = Math.floor(innerWidth * dpr)
+        canvas.height = Math.floor(innerHeight * dpr)
+        canvas.style.width = innerWidth + 'px'
+        canvas.style.height = innerHeight + 'px'
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      }
+
+      resize()
+      window.addEventListener('resize', resize)
+
+      type Star = { x: number; y: number; size: number; speed: number; dir: 'v' | 'h' }
+      const stars: Star[] = []
+      const createStars = (count: number) => {
+        stars.length = 0
+        const { innerWidth, innerHeight } = window
+        for (let i = 0; i < count; i++) {
+          const isVertical = i % 2 === 0
+          const size = Math.random() < 0.15 ? 2.4 : Math.random() < 0.35 ? 1.8 : 1.1
+          const speedBase = isVertical ? 18 : 16
+          const speedJitter = Math.random() * 10
+          stars.push({
+            x: Math.random() * innerWidth,
+            y: Math.random() * innerHeight,
+            size,
+            speed: speedBase + speedJitter,
+            dir: isVertical ? 'v' : 'h'
+          })
+        }
+      }
+
+      // Density based on viewport size
+      const density = Math.floor((window.innerWidth * window.innerHeight) / 18000)
+      createStars(Math.max(120, Math.min(320, density)))
+
+      const draw = () => {
+        try {
+          const { innerWidth, innerHeight } = window
+          ctx.fillStyle = '#000'
+          ctx.fillRect(0, 0, innerWidth, innerHeight)
+
+          ctx.fillStyle = '#fff'
+          const deltaTime = 0.016
+          const margin = 5
+          
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i]
+            if (s.dir === 'v') {
+              s.y += s.speed * deltaTime
+              if (s.y > innerHeight + margin) {
+                s.y = -margin
+                s.x = Math.random() * innerWidth
+              }
+            } else {
+              s.x += s.speed * deltaTime
+              if (s.x > innerWidth + margin) {
+                s.x = -margin
+                s.y = Math.random() * innerHeight
+              }
+            }
+
+            // simple square for speed; arc is costlier. small sizes use 1x1, larger use small circle
+            if (s.size <= 1.2) {
+              ctx.fillRect(s.x, s.y, 1, 1)
+            } else {
+              ctx.beginPath()
+              ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2)
+              ctx.fill()
+            }
+          }
+
+          animationFrameId = requestAnimationFrame(draw)
+        } catch (error) {
+          console.warn('Selection star animation error:', error)
+          setTimeout(() => {
+            animationFrameId = requestAnimationFrame(draw)
+          }, 100)
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(draw)
+
+      return () => {
+        cancelAnimationFrame(animationFrameId)
+        window.removeEventListener('resize', resize)
+      }
+    }
+
+    const cleanup = initSelectionStarfield()
+    return cleanup
+  }, [showFinalImage])
+
   // Hide loading screen when video and images are loaded
   useEffect(() => {
     if (videoLoaded && imagesLoaded >= totalImages) {
@@ -185,7 +552,7 @@ export function App() {
     setTimeout(() => {
       setShowTransitionVideo(true)
       
-      // After transition video completes (2 seconds), show bright white animation
+      // After transition video completes (1 second), show bright white animation
       // Keep video playing while bright animation starts
       setTimeout(() => {
         setShowTransition(true)
@@ -196,7 +563,7 @@ export function App() {
           // Hide transition video only after final image is shown
           setShowTransitionVideo(false)
         }, 1000) // Duration of fade-in effect
-      }, 2000) // Duration of transition video
+      }, 1000) // Duration of transition video
     }, 1000) // Duration of fade-out animation
   }
 
@@ -209,9 +576,7 @@ export function App() {
     const handleMouseEnter = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (target && (target.classList.contains('planet-card') || 
-                    target.classList.contains('back-arrow') ||
-                    target.closest('.planet-card') ||
-                    target.closest('.back-arrow'))) {
+                    target.closest('.planet-card'))) {
         setIsHovering(true)
       }
     }
@@ -290,6 +655,32 @@ export function App() {
   }
 
   if (showFinalImage) {
+    const orbitPlanets = [
+      { name: 'Cosmic Profile', image: '/planet1.png', description: 'A quick snapshot of who I am.' },
+      { name: 'Asteroid Belt of Skills', image: '/planet2.png', description: 'Technologies and tools I work with.' },
+      { name: 'Cosmic Creations', image: '/planet3.png', description: 'Selected work and side projects.' },
+      { name: 'Journey Through Space', image: '/planet4.png', description: 'Roles and journeys so far.' },
+      { name: 'Constellation of Proof', image: '/planet5.png', description: 'Achievements and credentials.' },
+    ]
+
+    useEffect(() => {
+      let scrolling = false
+      const onWheel = (e: WheelEvent) => {
+        // Don't handle wheel events when modal is open
+        if (showModal) return
+        
+        if (!e.deltaY) return
+        e.preventDefault()
+        if (scrolling) return
+        scrolling = true
+        const forward = e.deltaY > 0
+        setOrbitRotationDeg(prev => prev + (forward ? -72 : 72))
+        setCurrentOrbitIndex(prev => (prev + (forward ? 1 : -1) + orbitPlanets.length) % orbitPlanets.length)
+        setTimeout(() => { scrolling = false }, 350)
+      }
+      window.addEventListener('wheel', onWheel, { passive: false })
+      return () => window.removeEventListener('wheel', onWheel as any)
+    }, [showModal])
     return (
       <div className="selection-page-container">
         {/* Custom Cursor */}
@@ -305,17 +696,47 @@ export function App() {
         </div>
 
         {/* Space Background */}
-        
-
-        {/* Selection Page Title */}
-        <div className="selection-title">
-          <h1 className="selection-main-title">Discover My Universe</h1>
+        <div className="selection-background">
+          <canvas ref={starCanvasRef} className="star-canvas"></canvas>
         </div>
 
-        {/* Back to Home Arrow */}
-        <div className="back-arrow" onClick={handleBackToHome}>
-          <div className="arrow-icon">↑</div>
+        {/* Header */}
+        <div className="portfolio-header">
+          <div className="header-content">
+            <h1 className="header-title">Mayank's Portfolio</h1>
+            <button className="header-home-button" onClick={handleBackToHome}>
+              <span className="home-icon">🏠</span>
+              <span className="home-text">Home</span>
+            </button>
+          </div>
         </div>
+
+        {/* Left info panel */}
+        <div className="selection-info">
+          <div className="selection-info-inner">
+            <div className="selection-info-label">Current Planet</div>
+            <div className="selection-info-name">{orbitPlanets[currentOrbitIndex].name}</div>
+            <div className="selection-info-desc">{orbitPlanets[currentOrbitIndex].description}</div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator with Curved Arrows */}
+        <div className="scroll-indicator">
+          <div className="scroll-arrow scroll-arrow-top">
+            <svg viewBox="0 0 100 50" className="curved-arrow">
+              <path d="M 20 40 Q 50 10 80 40" stroke="rgba(139, 92, 246, 0.8)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+              <path d="M 75 35 L 80 40 L 75 45" stroke="rgba(139, 92, 246, 0.8)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="scroll-text">Scroll to explore other planets</div>
+          <div className="scroll-arrow scroll-arrow-bottom">
+            <svg viewBox="0 0 100 50" className="curved-arrow">
+              <path d="M 20 10 Q 50 40 80 10" stroke="rgba(139, 92, 246, 0.8)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+              <path d="M 75 15 L 80 10 L 75 5" stroke="rgba(139, 92, 246, 0.8)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            </svg>
+          </div>
+        </div>
+
 
         {/* Bright overlay for back transition */}
         {showBackTransition && (
@@ -333,7 +754,7 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
+                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
                 className="scaling-planet-image"
                 loading="eager"
@@ -355,7 +776,7 @@ export function App() {
               } as any}
             >
               <img 
-                src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
+                src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                 alt={selectedPlanet} 
                 className="returning-planet-image"
                 loading="eager"
@@ -379,7 +800,7 @@ export function App() {
               {/* Left side - Planet Image */}
               <div className="planet-section">
                 <img 
-                  src={`/planet${selectedPlanet === 'About Me' ? '1' : selectedPlanet === 'Skills' ? '2' : selectedPlanet === 'Projects' ? '3' : selectedPlanet === 'Experience' ? '4' : selectedPlanet === 'Certifications' ? '5' : '1'}.png`} 
+                  src={`/planet${selectedPlanet === 'Cosmic Profile' ? '1' : selectedPlanet === 'Asteroid Belt of Skills' ? '2' : selectedPlanet === 'Cosmic Creations' ? '3' : selectedPlanet === 'Journey Through Space-Time' ? '4' : selectedPlanet === 'Constellation of Proof' ? '5' : '1'}.png`} 
                   alt={selectedPlanet} 
                   className="fullscreen-planet-image"
                   loading="eager"
@@ -397,7 +818,7 @@ export function App() {
                   </button>
                 </div>
                 <div className="content-body">
-                  {selectedPlanet === 'Skills' ? (
+                  {selectedPlanet === 'Asteroid Belt of Skills' ? (
                     <div className="skills-content">
                       <div className="skills-category">
                         <h3 className="category-title">Frontend</h3>
@@ -501,7 +922,7 @@ export function App() {
                         </div>
                       </div>
                     </div>
-                  ) : selectedPlanet === 'About Me' ? (
+                  ) : selectedPlanet === 'Cosmic Profile' ? (
                     <div className="about-content">
                       <div className="about-section profile-section">
                         <div className="profile-picture-container">
@@ -556,7 +977,7 @@ export function App() {
                         </div>
                       </div>
                     </div>
-                  ) : selectedPlanet === 'Projects' ? (
+                  ) : selectedPlanet === 'Cosmic Creations' ? (
                     <div className="projects-content">
                       <div className="project-item">
                         <div className="project-title-container">
@@ -680,7 +1101,7 @@ export function App() {
                         </div>
                       </div>
                     </div>
-                  ) : selectedPlanet === 'Experience' ? (
+                  ) : selectedPlanet === 'Journey Through Space-Time' ? (
                     <div className="experience-content">
                       <div className="experience-item">
                         <div className="experience-header">
@@ -705,7 +1126,7 @@ export function App() {
                         </div>
                       </div>
                     </div>
-                  ) : selectedPlanet === 'Certifications' ? (
+                  ) : selectedPlanet === 'Constellation of Proof' ? (
                     <div className="certifications-content">
                       <div className="certification-item">
                         <div className="certification-header">
@@ -816,104 +1237,30 @@ export function App() {
           </div>
         )}
 
-        {/* Background Video */}
-        <video
-          ref={backgroundVideoRef}
-          className={`background-video ${backgroundVideoLoaded ? 'loaded' : ''}`}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          onLoadedData={() => setBackgroundVideoLoaded(true)}
-          onCanPlay={() => setBackgroundVideoLoaded(true)}
-          onLoadStart={() => console.log('Space background video loading started')}
-        >
-          <source src="/space1.mp4" type="video/mp4" />
-        </video>
+        {/* Starfield replaces background video */}
 
-        {/* HUD Interface */}
-        <div className="hud-interface">
-          {/* About Me Planet - Bottom Left */}
-          <div className="planet-card about-me" onClick={(e) => handlePlanetClick('About Me', e)}>
-            <img 
-              src="/planet1.png" 
-              alt="About Me" 
-              className="planet-image" 
-              loading="eager" 
-              decoding="async"
-              fetchpriority="high"
-              onLoad={() => console.log('Planet 1 loaded')}
-            />
-            <div className="planet-label">
-              <span className="label-text">Cosmic Profile</span>
+        {/* Orbit Interface */}
+        <div className="orbit-interface">
+          <div className="orbit-viewport">
+            <div 
+              ref={orbitRef}
+              className="orbit"
+              style={{
+                '--orbit-rotation': `${orbitRotationDeg}deg`,
+              } as any}
+            >
+              {orbitPlanets.map((p, i) => (
+                <button
+                  key={p.name}
+                  className={`orbit-planet ${i === currentOrbitIndex ? 'visible' : ''}`}
+                  onClick={(e) => handlePlanetClick(p.name, e as any)}
+                  aria-label={p.name}
+                >
+                  <img src={p.image} alt={p.name} className="planet-image" loading="eager" decoding="async" />
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Skills Planet - Top Left */}
-          <div className="planet-card skills" onClick={(e) => handlePlanetClick('Skills', e)}>
-            <img 
-              src="/planet2.png" 
-              alt="Skills" 
-              className="planet-image" 
-              loading="eager" 
-              decoding="async"
-              fetchpriority="high"
-              onLoad={() => console.log('Planet 2 loaded')}
-            />
-            <div className="planet-label">
-              <span className="label-text">Asteroid Belt of Skills</span>
-            </div>
-          </div>
-
-          {/* Projects Planet - Top Right */}
-          <div className="planet-card projects" onClick={(e) => handlePlanetClick('Projects', e)}>
-            <img 
-              src="/planet3.png" 
-              alt="Projects" 
-              className="planet-image" 
-              loading="eager" 
-              decoding="async"
-              fetchpriority="high"
-              onLoad={() => console.log('Planet 3 loaded')}
-            />
-            <div className="planet-label">
-              <span className="label-text">Cosmic Creations</span>
-            </div>
-          </div>
-
-          {/* Experience Planet - Bottom Right */}
-          <div className="planet-card experience" onClick={(e) => handlePlanetClick('Experience', e)}>
-            <img 
-              src="/planet4.png" 
-              alt="Experience" 
-              className="planet-image" 
-              loading="eager" 
-              decoding="async"
-              fetchpriority="high"
-              onLoad={() => console.log('Planet 4 loaded')}
-            />
-            <div className="planet-label">
-              <span className="label-text">Journey Through Space-Time</span>
-            </div>
-          </div>
-
-          {/* Certifications Planet - Center Left */}
-          <div className="planet-card certifications" onClick={(e) => handlePlanetClick('Certifications', e)}>
-            <img 
-              src="/planet5.png" 
-              alt="Certifications" 
-              className="planet-image" 
-              loading="eager" 
-              decoding="async"
-              fetchpriority="high"
-              onLoad={() => console.log('Planet 5 loaded')}
-            />
-            <div className="planet-label">
-              <span className="label-text">Constellation of Proof</span>
-            </div>
-          </div>
-
         </div>
       </div>
     )
@@ -954,39 +1301,15 @@ export function App() {
         <div className="cursor-ring"></div>
       </div>
 
-      {/* Background Video */}
+      {/* Background Starfield (Home) */}
       <div className="video-container">
-        <video
-          ref={videoRef}
-          className={`background-video ${videoLoaded ? 'loaded' : ''}`}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          onLoadedData={() => setVideoLoaded(true)}
-          onCanPlay={() => setVideoLoaded(true)}
-          onLoadStart={() => console.log('Background video loading started')}
-        >
-          <source src="/Intro.mp4" type="video/mp4" />
-        </video>
+        <canvas ref={homeStarCanvasRef} className="background-video"></canvas>
       </div>
 
       {/* Transition Video Overlay */}
       {showTransitionVideo && (
         <div className="transition-video-overlay">
-          <video
-            className={`transition-video ${transitionVideoLoaded ? 'loaded' : ''}`}
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            onLoadedData={() => setTransitionVideoLoaded(true)}
-            onCanPlay={() => setTransitionVideoLoaded(true)}
-            onLoadStart={() => console.log('Transition video loading started')}
-          >
-            <source src="/Transition.mp4" type="video/mp4" />
-          </video>
+          <canvas ref={transitionStarCanvasRef} className="transition-star-canvas"></canvas>
         </div>
       )}
 
@@ -1007,6 +1330,12 @@ export function App() {
         <span className={`typing-cursor ${showSubtitleCursor ? 'visible' : 'hidden'}`}>_</span>
       </div>
 
+      {/* Earth Image Container */}
+      <div className={`earth-container ${textFading ? 'fading' : ''}`}>
+        <div className="earth-glow"></div>
+        <img src="/earth.png" alt="Earth" className="earth-image" loading="lazy" decoding="async" />
+      </div>
+
       {/* Enter Space Button */}
       {showButton && (
         <div className="enter-space-container">
@@ -1022,3 +1351,4 @@ export function App() {
     </div>
   )
 }
+
