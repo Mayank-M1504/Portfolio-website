@@ -665,6 +665,9 @@ export function App() {
 
     useEffect(() => {
       let scrolling = false
+      let touchStartY = 0
+      let touchStartX = 0
+      
       const onWheel = (e: WheelEvent) => {
         // Don't handle wheel events when modal is open
         if (showModal) return
@@ -678,8 +681,41 @@ export function App() {
         setCurrentOrbitIndex(prev => (prev + (forward ? 1 : -1) + orbitPlanets.length) % orbitPlanets.length)
         setTimeout(() => { scrolling = false }, 350)
       }
+      
+      const onTouchStart = (e: TouchEvent) => {
+        if (showModal) return
+        touchStartY = e.touches[0].clientY
+        touchStartX = e.touches[0].clientX
+      }
+      
+      const onTouchEnd = (e: TouchEvent) => {
+        if (showModal) return
+        if (scrolling) return
+        
+        const touchEndY = e.changedTouches[0].clientY
+        const touchEndX = e.changedTouches[0].clientX
+        const deltaY = touchStartY - touchEndY
+        const deltaX = touchStartX - touchEndX
+        
+        // Only trigger if vertical swipe is more significant than horizontal
+        if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50) {
+          scrolling = true
+          const forward = deltaY > 0
+          setOrbitRotationDeg(prev => prev + (forward ? -72 : 72))
+          setCurrentOrbitIndex(prev => (prev + (forward ? 1 : -1) + orbitPlanets.length) % orbitPlanets.length)
+          setTimeout(() => { scrolling = false }, 350)
+        }
+      }
+      
       window.addEventListener('wheel', onWheel, { passive: false })
-      return () => window.removeEventListener('wheel', onWheel as any)
+      window.addEventListener('touchstart', onTouchStart, { passive: true })
+      window.addEventListener('touchend', onTouchEnd, { passive: true })
+      
+      return () => {
+        window.removeEventListener('wheel', onWheel as any)
+        window.removeEventListener('touchstart', onTouchStart as any)
+        window.removeEventListener('touchend', onTouchEnd as any)
+      }
     }, [showModal])
     return (
       <div className="selection-page-container">

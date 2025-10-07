@@ -2525,13 +2525,17 @@ button, a, [onclick], [role="button"], .clickable, .planet-card {
 /* Responsive design */
 @media (max-width: 768px) {
   .title-text {
-    font-size: 2.8rem;
-    top: 50%;
+    font-size: 2.2rem;
+    top: 35%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-weight: 800;
     font-family: 'Neue Machina', sans-serif;
     color: #8B5CF6;
+    line-height: 1.1;
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
   }
   
   .typing-cursor {
@@ -2540,27 +2544,33 @@ button, a, [onclick], [role="button"], .clickable, .planet-card {
   }
   
   .subtitle-text {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, calc(-50% + 60px));
+    transform: translate(-50%, calc(-50% + 80px));
     font-weight: 600;
+    text-align: center;
+    width: 90%;
+    max-width: 300px;
+    line-height: 1.3;
   }
 
   /* Earth Container Mobile */
   .earth-container {
-    width: 300px;
-    height: 150px;
+    width: 280px;
+    height: 140px;
+    left: 50%;
+    bottom: 20px;
   }
 
   .earth-glow {
-    width: 400px;
-    height: 400px;
+    width: 200px;
+    height: 200px;
   }
 
   .earth-image {
-    width: 250px;
-    height: 250px;
+    width: 180px;
+    height: 180px;
   }
   
   .scroll-instruction {
@@ -3043,43 +3053,48 @@ button, a, [onclick], [role="button"], .clickable, .planet-card {
 
   /* Selection Info Mobile */
   .selection-info {
-    width: 90%;
-    max-width: 400px;
-    min-width: 280px;
+    width: 85%;
+    max-width: 320px;
+    min-width: 250px;
     left: 50%;
     transform: translate(-50%, -50%);
+    top: 60%;
   }
 
   .selection-info-inner {
-    padding: 15px 20px;
-    border-radius: 30px;
+    padding: 12px 16px;
+    border-radius: 25px;
   }
 
   .selection-info-label {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .selection-info-name {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
+    line-height: 1.2;
   }
 
   .selection-info-desc {
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 
   /* Scroll Indicator Mobile */
   .scroll-indicator {
-    gap: 15px;
+    gap: 12px;
+    left: 20px;
+    top: 50%;
   }
 
   .scroll-arrow {
-    width: 60px;
-    height: 30px;
+    width: 50px;
+    height: 25px;
   }
 
   .scroll-text {
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    white-space: nowrap;
   }
 }
