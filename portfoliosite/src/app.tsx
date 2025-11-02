@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
+import lottie from 'lottie-web'
+import type { AnimationItem } from 'lottie-web'
+import emailjs from '@emailjs/browser'
 import './app.css'
 
 export function App() {
@@ -31,7 +34,13 @@ export function App() {
   const [showButton, setShowButton] = useState(true)
   const [currentOrbitIndex, setCurrentOrbitIndex] = useState(0)
   const [orbitRotationDeg, setOrbitRotationDeg] = useState(0)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [submitMessage, setSubmitMessage] = useState('')
   const orbitRef = useRef<HTMLDivElement>(null)
+  const lottieContainerRef = useRef<HTMLDivElement>(null)
+  const lottieAnimationRef = useRef<AnimationItem | null>(null)
 
   // Typing effect for title text
   useEffect(() => {
@@ -114,7 +123,8 @@ export function App() {
       '/planet2.png', 
       '/planet3.png',
       '/planet4.png',
-      '/planet5.png'
+      '/planet5.png',
+      '/earth.png'
     ]
     
     const videoUrls = [
@@ -717,6 +727,138 @@ export function App() {
         window.removeEventListener('touchend', onTouchEnd as any)
       }
     }, [showModal])
+
+    // Initialize Lottie animation for contact button
+    useEffect(() => {
+      if (!lottieContainerRef.current) return
+
+      // Clean up previous animation if it exists
+      if (lottieAnimationRef.current) {
+        lottieAnimationRef.current.destroy()
+        lottieAnimationRef.current = null
+      }
+
+      // Load and initialize Lottie animation
+      try {
+        const animation = lottie.loadAnimation({
+          container: lottieContainerRef.current,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: '/space boy developer.json'
+        })
+
+        lottieAnimationRef.current = animation
+
+        // Cleanup on unmount
+        return () => {
+          if (lottieAnimationRef.current) {
+            lottieAnimationRef.current.destroy()
+            lottieAnimationRef.current = null
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load Lottie animation:', error)
+      }
+    }, [])
+
+    // Form submission handler
+    const handleFormSubmit = async (e: Event) => {
+      e.preventDefault()
+      setIsSubmitting(true)
+      setSubmitStatus('idle')
+      setSubmitMessage('')
+
+      const form = e.target as HTMLFormElement
+      const formData = new FormData(form)
+      const name = formData.get('name') as string
+      const email = formData.get('email') as string
+      const purpose = formData.get('purpose') as string
+
+      try {
+        // EmailJS configuration - Replace these with your actual EmailJS credentials
+        const serviceId = 'YOUR_SERVICE_ID' // Replace with your EmailJS service ID
+        const templateId = 'YOUR_TEMPLATE_ID' // Replace with your EmailJS template ID
+        const publicKey = 'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+
+        // Send email using EmailJS
+        await emailjs.send(
+          serviceId,
+          templateId,
+          {
+            from_name: name,
+            from_email: email,
+            message: purpose,
+            to_email: 'your-email@example.com', // Your email address
+          },
+          publicKey
+        )
+
+        setSubmitStatus('success')
+        setSubmitMessage('Thank you! Your message has been sent successfully.')
+        form.reset()
+        
+        // Close form after 2 seconds
+        setTimeout(() => {
+          setShowContactForm(false)
+          setSubmitStatus('idle')
+          setSubmitMessage('')
+        }, 2000)
+      } catch (error) {
+        console.error('Failed to send email:', error)
+        setSubmitStatus('error')
+        setSubmitMessage('Sorry, there was an error sending your message. Please try again later.')
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+
+    // Alternative: Backend API endpoint handler (uncomment and use this instead of EmailJS)
+    /*
+    const handleFormSubmit = async (e: Event) => {
+      e.preventDefault()
+      setIsSubmitting(true)
+      setSubmitStatus('idle')
+      setSubmitMessage('')
+
+      const form = e.target as HTMLFormElement
+      const formData = new FormData(form)
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        purpose: formData.get('purpose'),
+      }
+
+      try {
+        const response = await fetch('YOUR_BACKEND_API_ENDPOINT', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+
+        if (!response.ok) throw new Error('Failed to submit')
+
+        setSubmitStatus('success')
+        setSubmitMessage('Thank you! Your message has been sent successfully.')
+        form.reset()
+        
+        setTimeout(() => {
+          setShowContactForm(false)
+          setSubmitStatus('idle')
+          setSubmitMessage('')
+        }, 2000)
+      } catch (error) {
+        console.error('Failed to submit form:', error)
+        setSubmitStatus('error')
+        setSubmitMessage('Sorry, there was an error sending your message. Please try again later.')
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+    */
+
     return (
       <div className="selection-page-container">
         {/* Custom Cursor */}
@@ -1298,6 +1440,84 @@ export function App() {
             </div>
           </div>
         </div>
+
+        {/* Contact Me Section */}
+        <div className="contact-section">
+          {/* Lottie Animation Button */}
+          <div 
+            className="contact-lottie-button"
+            onClick={() => setShowContactForm(!showContactForm)}
+          >
+            {/* Lottie animation container */}
+            <div ref={lottieContainerRef} className="lottie-container"></div>
+          </div>
+
+          {/* Contact Form - Animates upward */}
+          <div className={`contact-form-container ${showContactForm ? 'form-visible' : ''}`}>
+            <div className="contact-form">
+              <div className="form-header">
+                <h3 className="form-title">Contact Me</h3>
+                <button 
+                  className="form-close-button" 
+                  onClick={() => setShowContactForm(false)}
+                  aria-label="Close form"
+                >
+                  ✕
+                </button>
+              </div>
+              <form className="contact-form-fields" onSubmit={handleFormSubmit}>
+                <div className="form-field">
+                  <label htmlFor="contact-name" className="form-label">Name</label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    name="name"
+                    className="form-input"
+                    placeholder="Your Name"
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="contact-email" className="form-label">Email</label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    name="email"
+                    className="form-input"
+                    placeholder="your.email@example.com"
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="contact-purpose" className="form-label">Purpose</label>
+                  <textarea
+                    id="contact-purpose"
+                    name="purpose"
+                    className="form-textarea"
+                    placeholder="What's on your mind?"
+                    rows={4}
+                    required
+                  ></textarea>
+                </div>
+                
+                {/* Status Message */}
+                {submitStatus !== 'idle' && (
+                  <div className={`form-status-message ${submitStatus === 'success' ? 'success' : 'error'}`}>
+                    {submitMessage}
+                  </div>
+                )}
+                
+                <button 
+                  type="submit" 
+                  className="form-submit-button"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -1366,12 +1586,6 @@ export function App() {
         <span className={`typing-cursor ${showSubtitleCursor ? 'visible' : 'hidden'}`}>_</span>
       </div>
 
-      {/* Earth Image Container */}
-      <div className={`earth-container ${textFading ? 'fading' : ''}`}>
-        <div className="earth-glow"></div>
-        <img src="/earth.png" alt="Earth" className="earth-image" loading="lazy" decoding="async" />
-      </div>
-
       {/* Mobile Note */}
       <div className={`mobile-note ${textFading ? 'fading' : ''}`}>
         <div className="mobile-note-content">
@@ -1380,9 +1594,14 @@ export function App() {
         </div>
       </div>
 
-      {/* Enter Space Button */}
+      {/* Enter Space Button with Earth Image */}
       {showButton && (
         <div className="enter-space-container">
+          {/* Earth Image Container */}
+          <div className={`earth-container ${textFading ? 'fading' : ''}`}>
+            <div className="earth-glow"></div>
+            <img src="/earth.png" alt="Earth" className="earth-image" loading="lazy" decoding="async" />
+          </div>
           <button className="enter-space-button" onClick={handleEnterSpace}>
             Launch Exploration
           </button>

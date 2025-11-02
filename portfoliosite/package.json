@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "lottie-web": "^5.13.0",
     "preact": "^10.27.2"
   },
   "devDependencies": {
