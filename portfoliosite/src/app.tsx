@@ -28,6 +28,8 @@ export function App() {
   const [imagesLoaded, setImagesLoaded] = useState(0)
   const [totalImages, setTotalImages] = useState(5)
   const [showLoadingScreen, setShowLoadingScreen] = useState(true)
+  const [showEnterUniverse, setShowEnterUniverse] = useState(false)
+  const [showUniverseFade, setShowUniverseFade] = useState(false)
   const [showPlanetReturn, setShowPlanetReturn] = useState(false)
   const [showTransitionVideo, setShowTransitionVideo] = useState(false)
   const [textFading, setTextFading] = useState(false)
@@ -41,10 +43,104 @@ export function App() {
   const orbitRef = useRef<HTMLDivElement>(null)
   const lottieContainerRef = useRef<HTMLDivElement>(null)
   const lottieAnimationRef = useRef<AnimationItem | null>(null)
+  
+  // Audio refs
+  const typingAudioRef = useRef<HTMLAudioElement | null>(null)
+  const transitionAudioRef = useRef<HTMLAudioElement | null>(null)
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null)
+  const planetClickAudioRef = useRef<HTMLAudioElement | null>(null)
+  const [backgroundAudioStarted, setBackgroundAudioStarted] = useState(false)
+  const [audioReady, setAudioReady] = useState(false)
+  const [audioUnlocked, setAudioUnlocked] = useState(false)
+  const typingAudioQueuedRef = useRef(false)
+  const subtitleTypingAudioQueuedRef = useRef(false)
 
-  // Typing effect for title text
+  // Initialize and preload audio elements
   useEffect(() => {
-    const fullText = "Mayank’s Cosmos"
+    let audioReadyCount = 0
+    const totalAudioCount = 4
+
+    const checkAudioReady = () => {
+      audioReadyCount++
+      if (audioReadyCount === totalAudioCount) {
+        setAudioReady(true)
+      }
+    }
+
+    // Create audio elements with preload
+    typingAudioRef.current = new Audio('/typing.mp3')
+    transitionAudioRef.current = new Audio('/transition.mp3')
+    backgroundAudioRef.current = new Audio('/background.mp3')
+    planetClickAudioRef.current = new Audio('/planet-click.mp3')
+
+    // Set preload to auto for all audio files
+    typingAudioRef.current.preload = 'auto'
+    transitionAudioRef.current.preload = 'auto'
+    backgroundAudioRef.current.preload = 'auto'
+    planetClickAudioRef.current.preload = 'auto'
+
+    // Wait for audio to be ready before marking as loaded
+    typingAudioRef.current.addEventListener('canplaythrough', checkAudioReady, { once: true })
+    transitionAudioRef.current.addEventListener('canplaythrough', checkAudioReady, { once: true })
+    backgroundAudioRef.current.addEventListener('canplaythrough', checkAudioReady, { once: true })
+    planetClickAudioRef.current.addEventListener('canplaythrough', checkAudioReady, { once: true })
+
+    // Also handle errors
+    typingAudioRef.current.addEventListener('error', checkAudioReady, { once: true })
+    transitionAudioRef.current.addEventListener('error', checkAudioReady, { once: true })
+    backgroundAudioRef.current.addEventListener('error', checkAudioReady, { once: true })
+    planetClickAudioRef.current.addEventListener('error', checkAudioReady, { once: true })
+
+    // Force load the audio files
+    typingAudioRef.current.load()
+    transitionAudioRef.current.load()
+    backgroundAudioRef.current.load()
+    planetClickAudioRef.current.load()
+
+    // Configure background audio to loop
+    if (backgroundAudioRef.current) {
+      backgroundAudioRef.current.loop = true
+      backgroundAudioRef.current.volume = 0.3 // Lower volume for background
+    }
+
+    // Configure other audio volumes
+    if (typingAudioRef.current) {
+      typingAudioRef.current.volume = 0.5
+    }
+    if (transitionAudioRef.current) {
+      transitionAudioRef.current.volume = 0.6
+    }
+    if (planetClickAudioRef.current) {
+      planetClickAudioRef.current.volume = 0.7
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (typingAudioRef.current) {
+        typingAudioRef.current.pause()
+        typingAudioRef.current = null
+      }
+      if (transitionAudioRef.current) {
+        transitionAudioRef.current.pause()
+        transitionAudioRef.current = null
+      }
+      if (backgroundAudioRef.current) {
+        backgroundAudioRef.current.pause()
+        backgroundAudioRef.current = null
+      }
+      if (planetClickAudioRef.current) {
+        planetClickAudioRef.current.pause()
+        planetClickAudioRef.current = null
+      }
+    }
+  }, [])
+
+  // Typing effect for title text - only start after Enter Universe page
+  useEffect(() => {
+    // Don't start typing if Enter Universe page is still showing
+    if (showEnterUniverse) return
+    
+    const fullText = "Mayank's Cosmos"
     let currentIndex = 0
     let timeoutId: number
 
@@ -61,6 +157,24 @@ export function App() {
 
     // Start typing effect after a short delay
     const startTyping = setTimeout(() => {
+      // Play typing audio when typing starts (wait for audio to be ready and unlocked)
+      const playTypingAudio = () => {
+        if (typingAudioRef.current && audioReady && audioUnlocked) {
+          typingAudioRef.current.currentTime = 0 // Reset to start
+          typingAudioRef.current.play().catch(err => {
+            console.log('Typing audio play failed:', err)
+          })
+          typingAudioQueuedRef.current = false
+        } else {
+          if (!audioReady || !audioUnlocked) {
+            // Queue the audio to play once ready and unlocked
+            typingAudioQueuedRef.current = true
+            // Retry after a short delay
+            setTimeout(playTypingAudio, 100)
+          }
+        }
+      }
+      playTypingAudio()
       typeText()
     }, 500)
 
@@ -68,10 +182,13 @@ export function App() {
       clearTimeout(startTyping)
       clearTimeout(timeoutId)
     }
-  }, [typingKey])
+  }, [typingKey, audioReady, audioUnlocked, showEnterUniverse])
 
-  // Typing effect for subtitle text
+  // Typing effect for subtitle text - only start after Enter Universe page
   useEffect(() => {
+    // Don't start typing if Enter Universe page is still showing
+    if (showEnterUniverse) return
+    
     const fullSubtitle = "My Superpower ? Turning Coffee into code"
     let currentIndex = 0
     let timeoutId: number
@@ -80,7 +197,8 @@ export function App() {
       if (currentIndex < fullSubtitle.length) {
         setDisplayedSubtitle(fullSubtitle.slice(0, currentIndex + 1))
         currentIndex++
-        timeoutId = setTimeout(typeSubtitle, 80) // Slightly faster typing for subtitle
+        // Type in under 2 seconds: subtitle is 43 chars, so ~45ms per char
+        timeoutId = setTimeout(typeSubtitle, 45)
       } else {
         // Start blinking cursor after typing is complete
         setShowSubtitleCursor(true)
@@ -89,6 +207,24 @@ export function App() {
 
     // Start subtitle typing after main title is complete (2.5 seconds delay)
     const startSubtitleTyping = setTimeout(() => {
+      // Play typing audio when subtitle typing starts (wait for audio to be ready and unlocked)
+      const playTypingAudio = () => {
+        if (typingAudioRef.current && audioReady && audioUnlocked) {
+          typingAudioRef.current.currentTime = 0 // Reset to start
+          typingAudioRef.current.play().catch(err => {
+            console.log('Subtitle typing audio play failed:', err)
+          })
+          subtitleTypingAudioQueuedRef.current = false
+        } else {
+          if (!audioReady || !audioUnlocked) {
+            // Queue the audio to play once ready and unlocked
+            subtitleTypingAudioQueuedRef.current = true
+            // Retry after a short delay
+            setTimeout(playTypingAudio, 100)
+          }
+        }
+      }
+      playTypingAudio()
       typeSubtitle()
     }, 2500)
 
@@ -96,7 +232,7 @@ export function App() {
       clearTimeout(startSubtitleTyping)
       clearTimeout(timeoutId)
     }
-  }, [typingKey])
+  }, [typingKey, audioReady, audioUnlocked, showEnterUniverse])
 
   // Cursor blinking effect for main title
   useEffect(() => {
@@ -116,7 +252,7 @@ export function App() {
     return () => clearInterval(interval)
   }, [])
 
-  // Preload critical images and videos
+  // Preload critical images, videos, and audio files
   useEffect(() => {
     const imageUrls = [
       '/planet1.png',
@@ -176,11 +312,14 @@ export function App() {
       video.src = url
       video.load()
     })
+    
+    // Note: Audio files are loaded in the audio initialization useEffect
+    // to avoid duplicate loading - they're tracked via audioReady state
   }, [])
 
-  // Initialize canvas starfield for Home (when not in selection page)
+  // Initialize canvas starfield for Home (when not in selection page and after Enter Universe)
   useEffect(() => {
-    if (showFinalImage) return
+    if (showFinalImage || showEnterUniverse) return
     
     const initHomeStarfield = () => {
       const canvas = homeStarCanvasRef.current
@@ -285,7 +424,7 @@ export function App() {
 
     const cleanup = initHomeStarfield()
     return cleanup
-  }, [showFinalImage])
+  }, [showFinalImage, showEnterUniverse])
 
   // Fast starfield during transition overlay (replaces Transition.mp4)
   useEffect(() => {
@@ -544,17 +683,37 @@ export function App() {
     return cleanup
   }, [showFinalImage])
 
-  // Hide loading screen when video and images are loaded
+  // Hide loading screen and show Enter Universe page when video, images, and audio are loaded
   useEffect(() => {
-    if (videoLoaded && imagesLoaded >= totalImages) {
+    if (videoLoaded && imagesLoaded >= totalImages && audioReady) {
       setTimeout(() => {
         setShowLoadingScreen(false)
+        setShowEnterUniverse(true)
       }, 500) // Small delay for smooth transition
     }
-  }, [videoLoaded, imagesLoaded, totalImages])
+  }, [videoLoaded, imagesLoaded, totalImages, audioReady])
+
+  // Handle Enter Universe button click
+  const handleEnterUniverse = () => {
+    setShowUniverseFade(true)
+    
+    // After fade animation completes, show home page and start typing
+    setTimeout(() => {
+      setShowEnterUniverse(false)
+      setShowUniverseFade(false)
+      // Typing animation will start automatically via showEnterUniverse state change
+    }, 1000) // Duration of fade animation
+  }
 
   // Handle enter space button click
   const handleEnterSpace = () => {
+    // Audio unlocking is handled by the unlockAudio useEffect
+    // Play transition audio when transition starts (only if unlocked)
+    if (transitionAudioRef.current && audioUnlocked) {
+      transitionAudioRef.current.currentTime = 0 // Reset to start
+      transitionAudioRef.current.play().catch(() => {})
+    }
+    
     setTextFading(true)
     setShowButton(false)
     
@@ -576,6 +735,84 @@ export function App() {
       }, 1000) // Duration of transition video
     }, 1000) // Duration of fade-out animation
   }
+
+  // Unlock audio on first user interaction (root fix for autoplay policy)
+  useEffect(() => {
+    if (audioUnlocked) return // Already unlocked
+
+    const unlockAudio = () => {
+      if (audioUnlocked || !audioReady) return
+      
+      // Unlock audio by playing and immediately pausing (required by browsers)
+      const unlockPromises: Promise<void>[] = []
+      
+      if (typingAudioRef.current) {
+        unlockPromises.push(
+          typingAudioRef.current.play()
+            .then(() => typingAudioRef.current?.pause())
+            .catch(() => {})
+        )
+      }
+      
+      if (backgroundAudioRef.current) {
+        unlockPromises.push(
+          backgroundAudioRef.current.play()
+            .then(() => {
+              setBackgroundAudioStarted(true)
+              // Keep background audio playing (don't pause)
+            })
+            .catch(() => {
+              // If it fails, it will retry on next interaction
+            })
+        )
+      }
+      
+      if (transitionAudioRef.current) {
+        unlockPromises.push(
+          transitionAudioRef.current.play()
+            .then(() => transitionAudioRef.current?.pause())
+            .catch(() => {})
+        )
+      }
+      
+      if (planetClickAudioRef.current) {
+        unlockPromises.push(
+          planetClickAudioRef.current.play()
+            .then(() => planetClickAudioRef.current?.pause())
+            .catch(() => {})
+        )
+      }
+      
+      Promise.all(unlockPromises).then(() => {
+        setAudioUnlocked(true)
+        
+        // Play queued typing audio if any
+        if (typingAudioQueuedRef.current && typingAudioRef.current) {
+          typingAudioRef.current.currentTime = 0
+          typingAudioRef.current.play().catch(() => {})
+          typingAudioQueuedRef.current = false
+        }
+        
+        if (subtitleTypingAudioQueuedRef.current && typingAudioRef.current) {
+          // Will play when subtitle typing starts
+          subtitleTypingAudioQueuedRef.current = false
+        }
+      })
+    }
+
+    // Try to unlock on any user interaction
+    const events = ['mousedown', 'touchstart', 'keydown', 'click']
+    
+    events.forEach(eventType => {
+      document.addEventListener(eventType, unlockAudio, { once: true, passive: true })
+    })
+
+    return () => {
+      events.forEach(eventType => {
+        document.removeEventListener(eventType, unlockAudio)
+      })
+    }
+  }, [audioReady, audioUnlocked])
 
   // Mouse tracking for custom cursor
   useEffect(() => {
@@ -602,12 +839,32 @@ export function App() {
       document.removeEventListener('mouseover', handleMouseEnter)
       document.removeEventListener('mouseout', handleMouseLeave)
     }
-  }, [])
+  }, [backgroundAudioStarted])
+
+  // Global click sound - play on any mouse click
+  useEffect(() => {
+    const handleClick = () => {
+      // Play click sound on any mouse click (only if audio is unlocked)
+      if (planetClickAudioRef.current && audioUnlocked) {
+        planetClickAudioRef.current.currentTime = 0 // Reset to start
+        planetClickAudioRef.current.play().catch(() => {})
+      }
+    }
+
+    document.addEventListener('click', handleClick)
+
+    return () => {
+      document.removeEventListener('click', handleClick)
+    }
+  }, [audioUnlocked])
 
   // Function to handle planet clicks
   const handlePlanetClick = (planetName: string, event: MouseEvent) => {
     const target = event.currentTarget as HTMLElement
     if (!target) return
+    
+    // Audio unlocking is handled by the unlockAudio useEffect
+    // Note: Click sound is handled by global click handler
     
     const rect = target.getBoundingClientRect()
     const centerX = rect.left + rect.width / 2
@@ -776,10 +1033,15 @@ export function App() {
       const purpose = formData.get('purpose') as string
 
       try {
-        // EmailJS configuration - Replace these with your actual EmailJS credentials
-        const serviceId = 'YOUR_SERVICE_ID' // Replace with your EmailJS service ID
-        const templateId = 'YOUR_TEMPLATE_ID' // Replace with your EmailJS template ID
-        const publicKey = 'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+        // EmailJS configuration - Load from environment variables
+        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+        // Validate that environment variables are set
+        if (!serviceId || !templateId || !publicKey) {
+          throw new Error('EmailJS configuration is missing. Please set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY environment variables.')
+        }
 
         // Send email using EmailJS
         await emailjs.send(
@@ -789,7 +1051,7 @@ export function App() {
             from_name: name,
             from_email: email,
             message: purpose,
-            to_email: 'your-email@example.com', // Your email address
+            to_email: import.meta.env.VITE_EMAILJS_TO_EMAIL || 'your-email@example.com',
           },
           publicKey
         )
@@ -1557,10 +1819,30 @@ export function App() {
         <div className="cursor-ring"></div>
       </div>
 
-      {/* Background Starfield (Home) */}
-      <div className="video-container">
-        <canvas ref={homeStarCanvasRef} className="background-video"></canvas>
-      </div>
+      {/* Enter Universe Page */}
+      {showEnterUniverse && (
+        <div className="enter-universe-screen">
+          <div className="enter-universe-content">
+            <button 
+              className="enter-universe-button" 
+              onClick={handleEnterUniverse}
+            >
+              Enter the Universe
+            </button>
+          </div>
+          {/* Circular fade overlay */}
+          {showUniverseFade && (
+            <div className="universe-fade-overlay"></div>
+          )}
+        </div>
+      )}
+
+      {/* Background Starfield (Home) - Only show after Enter Universe */}
+      {!showEnterUniverse && (
+        <div className="video-container">
+          <canvas ref={homeStarCanvasRef} className="background-video"></canvas>
+        </div>
+      )}
 
       {/* Transition Video Overlay */}
       {showTransitionVideo && (
@@ -1574,28 +1856,30 @@ export function App() {
         <div className="bright-overlay"></div>
       )}
 
-      {/* Text at top-left */}
-      <div className={`title-text ${textFading ? 'fading' : ''}`}>
-        {displayedText}
-        <span className={`typing-cursor ${showCursor ? 'visible' : 'hidden'}`}>_</span>
-      </div>
+      {/* Text at top-left - Only show after Enter Universe */}
+      {!showEnterUniverse && (
+        <>
+          <div className={`title-text ${textFading ? 'fading' : ''}`}>
+            {displayedText}
+            <span className={`typing-cursor ${showCursor ? 'visible' : 'hidden'}`}>_</span>
+          </div>
 
-      {/* Subtitle text below main title */}
-      <div className={`subtitle-text ${textFading ? 'fading' : ''}`}>
-        {displayedSubtitle}
-        <span className={`typing-cursor ${showSubtitleCursor ? 'visible' : 'hidden'}`}>_</span>
-      </div>
+          {/* Subtitle text below main title */}
+          <div className={`subtitle-text ${textFading ? 'fading' : ''}`}>
+            {displayedSubtitle}
+            <span className={`typing-cursor ${showSubtitleCursor ? 'visible' : 'hidden'}`}>_</span>
+          </div>
 
-      {/* Mobile Note */}
-      <div className={`mobile-note ${textFading ? 'fading' : ''}`}>
-        <div className="mobile-note-content">
-          <div className="mobile-note-icon">📱</div>
-          <div className="mobile-note-text">Please view in Desktop for best experience</div>
-        </div>
-      </div>
+          {/* Mobile Note */}
+          <div className={`mobile-note ${textFading ? 'fading' : ''}`}>
+            <div className="mobile-note-content">
+              <div className="mobile-note-icon">📱</div>
+              <div className="mobile-note-text">Please view in Desktop for best experience</div>
+            </div>
+          </div>
 
-      {/* Enter Space Button with Earth Image */}
-      {showButton && (
+          {/* Enter Space Button with Earth Image */}
+          {showButton && (
         <div className="enter-space-container">
           {/* Earth Image Container */}
           <div className={`earth-container ${textFading ? 'fading' : ''}`}>
@@ -1606,6 +1890,8 @@ export function App() {
             Launch Exploration
           </button>
         </div>
+          )}
+        </>
       )}
 
 
